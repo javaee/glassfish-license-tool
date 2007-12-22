@@ -11,7 +11,7 @@ public class RecognizerFactory {
 
         // Java
         for (String suffix : JAVA_LIKE_SUFFIXES) {
-            recognizer.addRecognizer(suffix, createRecognizer(suffix, JAVA_COMMENT_START, JAVA_COMMENT_END));
+            recognizer.addRecognizer(suffix, createRecognizer(suffix, JAVA_COMMENT_START, JAVA_COMMENT_END,JAVA_COMMENT_PREFIX));
         }
 
         // Java line
@@ -21,7 +21,7 @@ public class RecognizerFactory {
 
         // XML
         for (String suffix : XML_LIKE_SUFFIXES) {
-            recognizer.addRecognizer(suffix, createRecognizer(suffix, XML_COMMENT_START, XML_COMMENT_END));
+            recognizer.addRecognizer(suffix, createRecognizer(suffix, XML_COMMENT_START, XML_COMMENT_END, XML_COMMENT_PREFIX));
         }
 
         // Scheme
@@ -55,8 +55,8 @@ public class RecognizerFactory {
         return recognizer;
     }
 
-    FileSuffixRecognizer createRecognizer(String suffix, String start, String end) {
-        return new FileSuffixRecognizer(suffix, new FileParser.BlockCommentFileParser(start, end));
+    FileSuffixRecognizer createRecognizer(String suffix, String start, String end, String prefix) {
+        return new FileSuffixRecognizer(suffix, new FileParser.BlockCommentFileParser(start, end, prefix));
     }
 
     FileSuffixRecognizer createRecognizer(String suffix, String prefix) {
