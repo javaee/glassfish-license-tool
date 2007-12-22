@@ -5,19 +5,51 @@ import static org.jvnet.licensetool.Constants.*;
 import java.io.IOException;
 
 public class RecognizerFactory {
-    CompositeRecognizer recognizer = new CompositeRecognizer();
-
     public FileRecognizer getDefaultRecognizer() {
+        CompositeRecognizer recognizer = new CompositeRecognizer();
         // Configure the recognizer
 
         // Java
         for (String suffix : JAVA_LIKE_SUFFIXES) {
             recognizer.addRecognizer(suffix, createRecognizer(suffix, JAVA_COMMENT_START, JAVA_COMMENT_END));
         }
+
+        // Java line
+	    for (String suffix : JAVA_LINE_LIKE_SUFFIXES) {
+            recognizer.addRecognizer(suffix, createRecognizer(suffix, JAVA_LINE_PREFIX));
+	    }
+
         // XML
         for (String suffix : XML_LIKE_SUFFIXES) {
             recognizer.addRecognizer(suffix, createRecognizer(suffix, XML_COMMENT_START, XML_COMMENT_END));
         }
+
+        // Scheme
+	    for (String suffix : SCHEME_LIKE_SUFFIXES) {
+		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SCHEME_PREFIX));
+	    }
+
+        // Shell
+	    for (String suffix : SHELL_LIKE_SUFFIXES) {
+		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SHELL_PREFIX));
+	    }
+
+        for (String suffix : MAKEFILE_NAMES) {
+		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SHELL_PREFIX));
+	    }
+
+        for (String suffix : SHELL_SCRIPT_LIKE_SUFFIXES) {
+		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SHELL_PREFIX));
+	    }
+	    
+	    // Binary
+	    for (String suffix : BINARY_LIKE_SUFFIXES) {
+		    recognizer.addRecognizer(suffix, null);
+	    }
+
+	    for (String suffix : IGNORE_FILE_NAMES) {
+		    recognizer.addRecognizer(suffix, null);
+	    }
 
         recognizer.addRecognizer(createShellContentRecognizer());
         return recognizer;
