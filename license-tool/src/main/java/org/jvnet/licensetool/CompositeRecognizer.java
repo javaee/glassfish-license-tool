@@ -47,14 +47,16 @@ public class CompositeRecognizer implements FileRecognizer{
     public FileParser getParser(FileWrapper file) {
         FileRecognizer recognizer = suffixRecognizers.get(file.getSuffix());
         if(recognizer != null) {
-            recognizer.getParser(file);
+            return recognizer.getParser(file);             
         }
-        for(FileRecognizer r: contentRecognizers ) {
+
+        for (FileRecognizer r : contentRecognizers) {
             FileParser bp = r.getParser(file);
-            if( bp!= null) {
+            if (bp != null) {
                 return bp;
             }
         }
+
         return null;
     }
 

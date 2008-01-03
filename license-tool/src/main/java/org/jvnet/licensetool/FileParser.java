@@ -106,6 +106,20 @@ public class FileParser {
         }
     }
 
+    //BinaryFiles have no comment blocks and not parsed.
+    // this is just to convince the Tool that the file is
+    // recognized and ignored.
+    public static class BinaryFileParser extends FileParser {
+        public ParsedFile parseFile(FileWrapper file) throws IOException {
+           System.out.println("Skipped: " + file);
+           return null;
+        }
+
+        public Block createCommentBlock(Block commentText) {
+            return null;
+        }
+    }
+
     /**
      * Return the contents of the text file as a Block.
      */

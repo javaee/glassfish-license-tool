@@ -81,11 +81,11 @@ public class RecognizerFactory {
 	    
 	    // Binary
 	    for (String suffix : BINARY_LIKE_SUFFIXES) {
-		    recognizer.addRecognizer(suffix, null);
+		    recognizer.addRecognizer(suffix, new FileSuffixRecognizer(suffix, new FileParser.BinaryFileParser()));
 	    }
 
 	    for (String suffix : IGNORE_FILE_NAMES) {
-		    recognizer.addRecognizer(suffix, null);
+		    recognizer.addRecognizer(suffix, new FileSuffixRecognizer(suffix, new FileParser.BinaryFileParser()));
 	    }
 
         recognizer.addRecognizer(createShellContentRecognizer());

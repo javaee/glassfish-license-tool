@@ -108,8 +108,14 @@ public class Scanner {
         } else {
             final FileWrapper fw = new FileWrapper(file);
             try {
-                ParsedFile pfile = recognizer.getParser(fw).parseFile(fw);
-                result = action.evaluate(pfile);
+                FileParser parser = recognizer.getParser(fw);
+                if(parser == null) {
+                    System.out.println("Unrecognized file: " + fw);
+                    return false;
+                }
+                ParsedFile pfile = parser.parseFile(fw);
+                if(pfile != null)
+                    result = action.evaluate(pfile);
             } catch (IOException exc) {
                 System.out.println("Exception while processing file " + fw + ": " + exc);
                 exc.printStackTrace();
