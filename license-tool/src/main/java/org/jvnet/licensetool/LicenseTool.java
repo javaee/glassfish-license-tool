@@ -20,9 +20,9 @@ public class LicenseTool {
         @Help("Set to true to validate copyright header; if false, generate/update/insert copyright headers as needed")
         boolean validate();
 
-        @DefaultValue("0")
-        @Help("Set to >0 to get information about actions taken for every file.  Larger values give more detail.")
-        int verbose();
+        @DefaultValue("false")
+        @Help("Set to true to get information about actions taken for every file.")
+        boolean verbose();
 
         @DefaultValue("true")
         @Help("Set to true to avoid modifying any files")
@@ -46,7 +46,7 @@ public class LicenseTool {
     }
 
     private static boolean validate;
-    private static int verbose;
+    private static boolean verbose;
 
 
     private static void trace(String msg) {
@@ -84,7 +84,7 @@ public class LicenseTool {
     private static Block makeCopyrightBlock(String startYear,
                                             Block copyrightText) {
 
-        if (verbose > 1) {
+        if (verbose) {
             trace("makeCopyrightBlock: startYear = " + startYear);
             trace("makeCopyrightBlock: copyrightText = " + copyrightText);
 
@@ -98,7 +98,7 @@ public class LicenseTool {
         map.put(START_YEAR, startYear);
         Block withStart = copyrightText.instantiateTemplate(map);
 
-        if (verbose > 1) {
+        if (verbose) {
             trace("Contents of copyrightText block withStart date:");
             for (String str : withStart.contents()) {
                 trace("\t" + str);
@@ -116,7 +116,7 @@ public class LicenseTool {
         verbose = args.verbose();
         validate = args.validate();
 
-        if (verbose > 0) {
+        if (verbose) {
             trace("Main: args:\n" + args);
         }
 
@@ -131,9 +131,9 @@ public class LicenseTool {
 
             Scanner.Action action;
             if(validate) {
-                action = new ActionFactory(true,true).getValidateCopyrightAction(copyrightBlock);
+                action = new ActionFactory(verbose).getValidateCopyrightAction(copyrightBlock);
             } else {
-                action = new ActionFactory(true,true).getModifyCopyrightAction(copyrightBlock);
+                action = new ActionFactory(verbose).getModifyCopyrightAction(copyrightBlock);
             }
             // Finally, we process all files
             scanner.scan(new RecognizerFactory().getDefaultRecognizer(), action);

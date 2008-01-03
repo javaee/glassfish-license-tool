@@ -14,16 +14,16 @@ import java.util.Arrays;
  */
 public class Scanner {
     private final List<File> roots;
-    private final int verbose;
+    private final boolean verbose;
     private List<String> patternsToSkip;
 
-    public Scanner(int verbose, final List<File> files) {
+    public Scanner(boolean verbose, final List<File> files) {
         this.roots = files;
         this.verbose = verbose;
         patternsToSkip = new ArrayList<String>();
     }
 
-    public Scanner(final int verbose, final File... files) {
+    public Scanner(final boolean verbose, final File... files) {
         this(verbose, Arrays.asList(files));
     }
 
@@ -92,14 +92,14 @@ public class Scanner {
         for (String pattern : patternsToSkip) {
             String absPath = file.getAbsolutePath();
             if (match(pattern, absPath)) {
-                if (verbose > 0)
+                if (verbose)
                     System.out.println("Scanner: Skipping directory "
                             + absPath + "(pattern " + pattern + ")");
                 return true;
             }
         }
 
-        if (verbose > 0)
+        if (verbose)
             System.out.println("Scanner: Not skipping directory " + file);
         return false;
     }
@@ -114,7 +114,7 @@ public class Scanner {
         while (st.hasMoreTokens()) {
             final String token = st.nextToken();
             if (pattern.equals(token)) {
-                if (verbose > 0)
+                if (verbose)
                     System.out.println("fname " + fname
                             + " matched on pattern " + pattern);
                 return true;
