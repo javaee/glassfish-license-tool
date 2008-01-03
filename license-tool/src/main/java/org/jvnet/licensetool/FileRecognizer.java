@@ -5,5 +5,5 @@ package org.jvnet.licensetool;
  */
 
 public interface FileRecognizer {
-    FileParser getParser(FileWrapper file);
+    FileParser getParser(FileWrapper file);    
 }

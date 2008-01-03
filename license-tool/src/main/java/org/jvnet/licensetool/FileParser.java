@@ -11,32 +11,33 @@ import java.io.IOException;
  * This class parses FileWrappers into (lists of) Blocks.
  */
 public class FileParser {
-    public List<Block> parseFile(FileWrapper file) throws IOException {
+    public ParsedFile parseFile(FileWrapper file) throws IOException {
         List<Block> fileAsBlocks = new ArrayList<Block>();
         fileAsBlocks.add(getBlock(file));
-        return fileAsBlocks;
+        return new ParsedFile(file, fileAsBlocks,false);
     }
 
     public Block createCommentBlock(Block commentText) {
         final Block result = new Block(commentText);
         result.addTag(COMMENT_BLOCK_TAG);
         return result;
-
     }
 
     public static class BlockCommentFileParser extends FileParser {
         String start;
         String end;
         String prefix;
+        boolean commentAfterFirstBlock;
 
-        public BlockCommentFileParser(String start, String end, String prefix) {
+        public BlockCommentFileParser(String start, String end, String prefix, boolean commentAfterFirstBlock) {
             this.start = start;
             this.end = end;
             this.prefix = prefix;
+            this.commentAfterFirstBlock = commentAfterFirstBlock;
         }
 
-        public List<Block> parseFile(FileWrapper file) throws IOException {
-            return parseBlocks(file, start, end);
+        public ParsedFile parseFile(FileWrapper file) throws IOException {
+            return new ParsedFile(file, parseBlocks(file, start, end), commentAfterFirstBlock);
         }
 
         public Block createCommentBlock(Block commentText) {
@@ -52,13 +53,14 @@ public class FileParser {
 
     public static class LineCommentFileParser extends FileParser {
         String prefix;
-
-        public LineCommentFileParser(String prefix) {
+        boolean commentAfterFirstBlock;
+        public LineCommentFileParser(String prefix,boolean commentAfterFirstBlock) {
             this.prefix = prefix;
+            this.commentAfterFirstBlock = commentAfterFirstBlock;
         }
 
-        public List<Block> parseFile(FileWrapper file) throws IOException {
-            return parseBlocks(file, prefix);
+        public ParsedFile parseFile(FileWrapper file) throws IOException {
+            return new ParsedFile(file, parseBlocks(file, prefix), commentAfterFirstBlock);
         }
 
         public Block createCommentBlock(Block commentText) {

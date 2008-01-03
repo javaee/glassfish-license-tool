@@ -1,6 +1,5 @@
 package org.jvnet.licensetool;
 
-import org.jvnet.licensetool.FileWrapper;
 import org.jvnet.licensetool.generic.Pair;
 
 import java.util.*;

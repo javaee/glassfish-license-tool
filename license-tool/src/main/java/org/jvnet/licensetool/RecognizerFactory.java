@@ -11,35 +11,37 @@ public class RecognizerFactory {
 
         // Java
         for (String suffix : JAVA_LIKE_SUFFIXES) {
-            recognizer.addRecognizer(suffix, createRecognizer(suffix, JAVA_COMMENT_START, JAVA_COMMENT_END,JAVA_COMMENT_PREFIX));
+            recognizer.addRecognizer(suffix, createRecognizer(suffix, JAVA_COMMENT_START,
+                    JAVA_COMMENT_END,JAVA_COMMENT_PREFIX, false));
         }
 
         // Java line
 	    for (String suffix : JAVA_LINE_LIKE_SUFFIXES) {
-            recognizer.addRecognizer(suffix, createRecognizer(suffix, JAVA_LINE_PREFIX));
+            recognizer.addRecognizer(suffix, createRecognizer(suffix, JAVA_LINE_PREFIX, false));
 	    }
 
         // XML
         for (String suffix : XML_LIKE_SUFFIXES) {
-            recognizer.addRecognizer(suffix, createRecognizer(suffix, XML_COMMENT_START, XML_COMMENT_END, XML_COMMENT_PREFIX));
+            recognizer.addRecognizer(suffix, createRecognizer(suffix, XML_COMMENT_START,
+                    XML_COMMENT_END, XML_COMMENT_PREFIX, true));
         }
 
         // Scheme
 	    for (String suffix : SCHEME_LIKE_SUFFIXES) {
-		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SCHEME_PREFIX));
+		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SCHEME_PREFIX, false));
 	    }
 
         // Shell
 	    for (String suffix : SHELL_LIKE_SUFFIXES) {
-		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SHELL_PREFIX));
+		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SHELL_PREFIX, false));
 	    }
 
         for (String suffix : MAKEFILE_NAMES) {
-		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SHELL_PREFIX));
+		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SHELL_PREFIX, false));
 	    }
 
         for (String suffix : SHELL_SCRIPT_LIKE_SUFFIXES) {
-		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SHELL_PREFIX));
+		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SHELL_PREFIX, true));
 	    }
 	    
 	    // Binary
@@ -55,12 +57,16 @@ public class RecognizerFactory {
         return recognizer;
     }
 
-    FileSuffixRecognizer createRecognizer(String suffix, String start, String end, String prefix) {
-        return new FileSuffixRecognizer(suffix, new FileParser.BlockCommentFileParser(start, end, prefix));
+    FileSuffixRecognizer createRecognizer(String suffix, String start, String end,
+                                          String prefix, boolean commentAfterFirstBlock) {
+        return new FileSuffixRecognizer(suffix,
+                new FileParser.BlockCommentFileParser(start, end, prefix,commentAfterFirstBlock));
     }
 
-    FileSuffixRecognizer createRecognizer(String suffix, String prefix) {
-        return new FileSuffixRecognizer(suffix, new FileParser.LineCommentFileParser(prefix));
+    FileSuffixRecognizer createRecognizer(String suffix, String prefix,
+                                          boolean commentAfterFirstBlock) {
+        return new FileSuffixRecognizer(suffix,
+                new FileParser.LineCommentFileParser(prefix,commentAfterFirstBlock));
     }
 
     FileContentRecognizer createShellContentRecognizer() {
@@ -68,7 +74,7 @@ public class RecognizerFactory {
 
             public FileParser getParser(FileWrapper file) {
                 if (isShellFile(file)) {
-                    return new FileParser.LineCommentFileParser(SHELL_PREFIX);
+                    return new FileParser.LineCommentFileParser(SHELL_PREFIX,true);
                 }
                 return null;
             }
@@ -87,7 +93,7 @@ public class RecognizerFactory {
                     System.out.println("Could not read file " + file + " to check for shell script");
                 }
                 return false;
-            }
+            }            
         };
 
     }
