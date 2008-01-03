@@ -8,20 +8,14 @@ import java.io.IOException;
 
 public class ActionFactory {
     private final boolean verbose;
-    private final boolean dryRun;
     private final String COPYRIGHT = "Copyright";
 
     public ActionFactory() {
-        this(false, false);
+        this(false);
     }
 
     public ActionFactory(final boolean verbose) {
-        this(verbose, false);
-    }
-
-    public ActionFactory(final boolean verbose, final boolean dryRun) {
         this.verbose = verbose;
-        this.dryRun = dryRun;
     }
 
     /**
@@ -83,33 +77,8 @@ public class ActionFactory {
             public boolean evaluate(ParsedFile pfile) {
                 FileWrapper fw = pfile.getOriginalFile();
                 try {
-                    boolean hadAnOldSunCopyright = false;
-
-                    // Tag blocks
-                    for (Block block : pfile.getFileBlocks()) {
-                        String str = block.find(COPYRIGHT);
-                        if (str != null) {
-                            block.addTag(COPYRIGHT_BLOCK_TAG);
-                            String cddl = block.find("CDDL");
-                            if (cddl != null) {
-                                block.addTag("CDDL_TAG");
-                            }
-                            if (str.contains("Sun")) {
-                                block.addTag(SUN_COPYRIGHT_TAG);
-                                hadAnOldSunCopyright = true;
-                            }
-                        }
-                    }
-
-                    if (verbose) {
-                        trace("copyrightBlockAction: blocks in file " + fw);
-                        for (Block block : pfile.getFileBlocks()) {
-                            trace("\t" + block);
-                            for (String str : block.contents()) {
-                                trace("\t\t" + str);
-                            }
-                        }
-                    }
+                    //tag blocks
+                    boolean hadAnOldSunCopyright = tagBlocks(pfile);
 
                     // There should be a Sun copyright block in the first block
                     // (if afterFirstBlock is false), otherwise in the second block.
@@ -180,33 +149,8 @@ public class ActionFactory {
             public boolean evaluate(ParsedFile pfile) {
                 FileWrapper fw = pfile.getOriginalFile();
                 try {
-                    boolean hadAnOldSunCopyright = false;
-
-                    // Tag blocks
-                    for (Block block : pfile.getFileBlocks()) {
-                        String str = block.find(COPYRIGHT);
-                        if (str != null) {
-                            block.addTag(COPYRIGHT_BLOCK_TAG);
-                            String cddl = block.find("CDDL");
-                            if (cddl != null) {
-                                block.addTag("CDDL_TAG");
-                            }
-                            if (str.contains("Sun")) {
-                                block.addTag(SUN_COPYRIGHT_TAG);
-                                hadAnOldSunCopyright = true;
-                            }
-                        }
-                    }
-
-                    if (verbose) {
-                        trace("copyrightBlockAction: blocks in file " + fw);
-                        for (Block block : pfile.getFileBlocks()) {
-                            trace("\t" + block);
-                            for (String str : block.contents()) {
-                                trace("\t\t" + str);
-                            }
-                        }
-                    }
+                    //tag blocks
+                    boolean hadAnOldSunCopyright = tagBlocks(pfile);                    
 
                     // Re-write file, replacing the first block tagged
                     // SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG, and commentBlock with
@@ -261,6 +205,37 @@ public class ActionFactory {
         };
     }
 
+    private boolean tagBlocks(ParsedFile pfile) {
+        FileWrapper fw = pfile.getOriginalFile();
+        boolean hadAnOldSunCopyright = false;
+        // Tag blocks
+        for (Block block : pfile.getFileBlocks()) {
+            String str = block.find(COPYRIGHT);
+            if (str != null) {
+                block.addTag(COPYRIGHT_BLOCK_TAG);
+                String cddl = block.find("CDDL");
+                if (cddl != null) {
+                    block.addTag("CDDL_TAG");
+                }
+                if (str.contains("Sun")) {
+                    block.addTag(SUN_COPYRIGHT_TAG);
+                    hadAnOldSunCopyright = true;
+                }
+            }
+        }
+
+        if (verbose) {
+            trace("copyrightBlockAction: blocks in file " + fw);
+            for (Block block : pfile.getFileBlocks()) {
+                trace("\t" + block);
+                for (String str : block.contents()) {
+                    trace("\t\t" + str);
+                }
+            }
+        }
+        return hadAnOldSunCopyright;
+    }
+    
     private void trace(String msg) {
         System.out.println(msg);
     }
