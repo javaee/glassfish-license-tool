@@ -49,7 +49,7 @@ public class FileParser {
     public ParsedFile parseFile(FileWrapper file) throws IOException {
         List<Block> fileAsBlocks = new ArrayList<Block>();
         fileAsBlocks.add(getBlock(file));
-        return new ParsedFile(file, fileAsBlocks,false);
+        return new ParsedFile(file, this, fileAsBlocks,false);
     }
 
     public Block createCommentBlock(Block commentText) {
@@ -72,7 +72,7 @@ public class FileParser {
         }
 
         public ParsedFile parseFile(FileWrapper file) throws IOException {
-            return new ParsedFile(file, parseBlocks(file, start, end), commentAfterFirstBlock);
+            return new ParsedFile(file, this, parseBlocks(file, start, end), commentAfterFirstBlock);
         }
 
         public Block createCommentBlock(Block commentText) {
@@ -95,7 +95,7 @@ public class FileParser {
         }
 
         public ParsedFile parseFile(FileWrapper file) throws IOException {
-            return new ParsedFile(file, parseBlocks(file, prefix), commentAfterFirstBlock);
+            return new ParsedFile(file, this, parseBlocks(file, prefix), commentAfterFirstBlock);
         }
 
         public Block createCommentBlock(Block commentText) {

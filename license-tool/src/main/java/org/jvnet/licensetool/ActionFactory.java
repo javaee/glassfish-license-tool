@@ -111,6 +111,7 @@ public class ActionFactory {
 
             public boolean evaluate(ParsedFile pfile) {
                 FileWrapper fw = pfile.getOriginalFile();
+                Block cb = pfile.getFileParser().createCommentBlock(copyrightBlock);
                 try {
                     //tag blocks
                     boolean hadAnOldSunCopyright = tagBlocks(pfile);
@@ -125,7 +126,7 @@ public class ActionFactory {
                         if (!pfile.commentAfterFirstBlock() && (count == 0)) {
                             if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG,
                                     COMMENT_BLOCK_TAG)) {
-                                if (!copyrightBlock.equals(block)) {
+                                if (!cb.equals(block)) {
                                     validationError(block, "First block has incorrect copyright text", fw);
                                 }
                             } else {
@@ -135,7 +136,7 @@ public class ActionFactory {
                             return true;
                         } else if (pfile.commentAfterFirstBlock() && (count == 1)) {
                             if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG, COMMENT_BLOCK_TAG)) {
-                                if (!copyrightBlock.equals(block)) {
+                                if (!cb.equals(block)) {
                                     validationError(block, "Second block has incorrect copyright text", fw);
                                 }
                             } else {
@@ -183,6 +184,7 @@ public class ActionFactory {
 
             public boolean evaluate(ParsedFile pfile) {
                 FileWrapper fw = pfile.getOriginalFile();
+                Block cb = pfile.getFileParser().createCommentBlock(copyrightBlock);
                 try {
                     //tag blocks
                     boolean hadAnOldSunCopyright = tagBlocks(pfile);                    
@@ -204,9 +206,9 @@ public class ActionFactory {
                             if (!hadAnOldSunCopyright && firstBlock) {
                                 if (pfile.commentAfterFirstBlock()) {
                                     block.write(fw);
-                                    copyrightBlock.write(fw);
+                                    cb.write(fw);
                                 } else {
-                                    copyrightBlock.write(fw);
+                                    cb.write(fw);
                                     block.write(fw);
                                 }
                                 firstBlock = false;
@@ -214,7 +216,7 @@ public class ActionFactory {
                                     COMMENT_BLOCK_TAG) && firstMatch) {
                                 firstMatch = false;
                                 if (hadAnOldSunCopyright) {
-                                    copyrightBlock.write(fw);
+                                    cb.write(fw);
                                 }
                             } else {
                                 block.write(fw);

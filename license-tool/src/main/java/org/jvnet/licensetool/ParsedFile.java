@@ -43,10 +43,12 @@ import java.util.ArrayList;
  */
 public class ParsedFile {
     FileWrapper originalFile;
+    FileParser fileparser;
     List<Block> fileBlocks = new ArrayList<Block>();
     boolean commentAfterFirstBlock;
-    public ParsedFile(FileWrapper fw, List blocks, boolean commentAfterFirstBlock) {
+    public ParsedFile(FileWrapper fw, FileParser fp,List blocks, boolean commentAfterFirstBlock) {
         originalFile = fw;
+        fileparser = fp;
         fileBlocks = blocks;
         this.commentAfterFirstBlock = commentAfterFirstBlock;
     }
@@ -57,6 +59,10 @@ public class ParsedFile {
 
     public FileWrapper getOriginalFile() {
         return originalFile;
+    }
+    
+    public FileParser getFileParser() {
+        return fileparser;
     }
 
     public boolean commentAfterFirstBlock() {
