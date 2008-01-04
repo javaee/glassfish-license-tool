@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2003 Sun Microsystems, Inc. All rights reserved.
+ SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+-->
+<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+            elementFormDefault="qualified"
+            targetNamespace="http://example.com/"
+            xmlns:tns="http://example.com/">
+
+    <complexType name="addNumbersResponse">
+        <sequence>
+            <element name="return" type="xsd:int"/>
+        </sequence>
+    </complexType>
+    <element name="addNumbersResponse" type="tns:addNumbersResponse"/>
+    <element name="addNumbers2Response" type="tns:addNumbersResponse"/>
+    <element name="addNumbers3Response" type="tns:addNumbersResponse"/>
+
+    <complexType name="addNumbers">
+        <sequence>
+            <element name="number1" type="xsd:int"/>
+            <element name="number2" type="xsd:int"/>
+        </sequence>
+    </complexType>
+    <element name="addNumbers" type="tns:addNumbers"/>
+    <element name="addNumbers2" type="tns:addNumbers"/>
+    <element name="addNumbers3" type="tns:addNumbers"/>
+
+    <element name="AddNumbersFault" type="tns:AddNumbersFault"/>
+    <complexType name="AddNumbersFault">
+        <sequence>
+            <element name="detail" type="xsd:string"/>
+            <element name="message" type="xsd:string"/>
+        </sequence>
+    </complexType>
+</xsd:schema>
