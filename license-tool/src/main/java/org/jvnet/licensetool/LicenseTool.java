@@ -50,7 +50,7 @@ public class LicenseTool {
     private LicenseTool() {
     }
 
-    private interface Arguments {
+    public interface Arguments {
         @DefaultValue("true")
         @Help("Set to true to validate copyright header; if false, generate/update/insert copyright headers as needed")
         boolean validate();
@@ -142,11 +142,8 @@ public class LicenseTool {
 
         return withStart;
     }
-   
-    public static void main(String[] strs) {
-        ArgParser<Arguments> ap = new ArgParser(Arguments.class);
-        Arguments args = ap.parse(strs);
 
+    public static void process(Arguments args) {
         String startYear = args.startyear();
         verbose = args.verbose();
         validate = args.validate();
@@ -177,4 +174,11 @@ public class LicenseTool {
             exc.printStackTrace();
         }
     }
+
+    public static void main(String[] strs) {
+        ArgParser<Arguments> ap = new ArgParser(Arguments.class);
+        Arguments args = ap.parse(strs);
+        LicenseTool.process(args);        
+    }
+
 }
