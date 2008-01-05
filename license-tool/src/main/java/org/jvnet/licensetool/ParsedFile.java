@@ -36,36 +36,59 @@
 package org.jvnet.licensetool;
 
 import java.util.List;
-import java.util.ArrayList;
+import java.io.IOException;
 
 /**
  * Represents a parsed file.
  */
-public class ParsedFile {
+public abstract class ParsedFile {
+    FileParser parser;
+    List<Block> fileBlocks = null;
     FileWrapper originalFile;
-    FileParser fileparser;
-    List<Block> fileBlocks = new ArrayList<Block>();
-    boolean commentAfterFirstBlock;
-    public ParsedFile(FileWrapper fw, FileParser fp,List blocks, boolean commentAfterFirstBlock) {
-        originalFile = fw;
-        fileparser = fp;
-        fileBlocks = blocks;
-        this.commentAfterFirstBlock = commentAfterFirstBlock;
+
+    protected ParsedFile(FileWrapper originalFile, FileParser parser) throws IOException{
+        this.parser = parser;
+        fileBlocks = parser.parseBlocks(originalFile);
+        this.originalFile = originalFile;
     }
 
-    public List<Block> getFileBlocks() {
+    public List<Block> getFileBlocks(){
         return fileBlocks;
     }
 
-    public FileWrapper getOriginalFile() {
-        return originalFile;
-    }
-    
-    public FileParser getFileParser() {
-        return fileparser;
+    public Block createCommentBlock(Block commentText) {
+        return parser.createCommentBlock(commentText);
     }
 
-    public boolean commentAfterFirstBlock() {
-        return commentAfterFirstBlock;
+    public abstract boolean commentAfterFirstBlock();
+
+    public void setFileBlocks(List<Block> blocks) {
+        this.fileBlocks = blocks;
+    }
+    
+    public void write() throws IOException {
+      writeTo(originalFile);
+    }
+    public void writeTo(FileWrapper fw) throws IOException {
+        try {
+            if (fw.canWrite()) {
+                // TODO this is dangerous: a crash before close will destroy the file!
+                fw.delete();
+                fw.open(FileWrapper.OpenMode.WRITE);
+                for (Block block : fileBlocks) {
+                    block.write(fw);
+                }
+
+            } else {
+                //if (verbose) {
+                System.out.println("Skipping file " + fw + " because is is not writable");
+                //}
+            }
+        } finally {
+            fw.close();
+        }
+    }
+    public String toString() {
+        return originalFile.toString();
     }
 }

@@ -40,6 +40,8 @@ import static org.jvnet.licensetool.Tags.SUN_COPYRIGHT_TAG;
 import static org.jvnet.licensetool.Tags.COMMENT_BLOCK_TAG;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
 
 public class ActionFactory {
     private final boolean verbose;
@@ -110,55 +112,51 @@ public class ActionFactory {
             }
 
             public boolean evaluate(ParsedFile pfile) {
-                FileWrapper fw = pfile.getOriginalFile();
-                Block cb = pfile.getFileParser().createCommentBlock(copyrightBlock);
-                try {
-                    //tag blocks
-                    boolean hadAnOldSunCopyright = tagBlocks(pfile);
+                Block cb = pfile.createCommentBlock(copyrightBlock);
 
-                    // There should be a Sun copyright block in the first block
-                    // (if afterFirstBlock is false), otherwise in the second block.
-                    // It should entirely match copyrightText
-                    int count = 0;
-                    for (Block block : pfile.getFileBlocks()) {
+                //tag blocks
+                boolean hadAnOldSunCopyright = tagBlocks(pfile);
 
-                        // Generally always return true, because we want to see ALL validation errors.
-                        if (!pfile.commentAfterFirstBlock() && (count == 0)) {
-                            if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG,
-                                    COMMENT_BLOCK_TAG)) {
-                                if (!cb.equals(block)) {
-                                    validationError(block, "First block has incorrect copyright text", fw);
-                                }
-                            } else {
-                                validationError(block, "First block should be copyright but isn't", fw);
+                // There should be a Sun copyright block in the first block
+                // (if afterFirstBlock is false), otherwise in the second block.
+                // It should entirely match copyrightText
+                int count = 0;
+                for (Block block : pfile.getFileBlocks()) {
+
+                    // Generally always return true, because we want to see ALL validation errors.
+                    if (!pfile.commentAfterFirstBlock() && (count == 0)) {
+                        if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG,
+                                COMMENT_BLOCK_TAG)) {
+                            if (!cb.equals(block)) {
+                                validationError(block, "First block has incorrect copyright text", pfile.toString());
                             }
-
-                            return true;
-                        } else if (pfile.commentAfterFirstBlock() && (count == 1)) {
-                            if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG, COMMENT_BLOCK_TAG)) {
-                                if (!cb.equals(block)) {
-                                    validationError(block, "Second block has incorrect copyright text", fw);
-                                }
-                            } else {
-                                validationError(block, "Second block should be copyright but isn't", fw);
-                            }
-                            return true;
+                        } else {
+                            validationError(block, "First block should be copyright but isn't", pfile.toString());
                         }
 
-                        if (count > 1) {
-                            // should not get here!  Return false only in this case, because this is
-                            // an internal error in the validator.
-                            validationError(null, "Neither first nor second block checked", fw);
-                            return false;
+                        return true;
+                    } else if (pfile.commentAfterFirstBlock() && (count == 1)) {
+                        if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG, COMMENT_BLOCK_TAG)) {
+                            if (!cb.equals(block)) {
+                                validationError(block, "Second block has incorrect copyright text", pfile.toString());
+                            }
+                        } else {
+                            validationError(block, "Second block should be copyright but isn't", pfile.toString());
                         }
-
-                        count++;
-
+                        return true;
                     }
 
-                } finally {
-                    fw.close();
+                    if (count > 1) {
+                        // should not get here!  Return false only in this case, because this is
+                        // an internal error in the validator.
+                        validationError(null, "Neither first nor second block checked", pfile.toString());
+                        return false;
+                    }
+
+                    count++;
+
                 }
+
                 return true;
             }
         };
@@ -183,67 +181,56 @@ public class ActionFactory {
             }
 
             public boolean evaluate(ParsedFile pfile) {
-                FileWrapper fw = pfile.getOriginalFile();
-                Block cb = pfile.getFileParser().createCommentBlock(copyrightBlock);
-                try {
-                    //tag blocks
-                    boolean hadAnOldSunCopyright = tagBlocks(pfile);                    
+                //FileWrapper fw = pfile.getOriginalFile();
+                Block cb = pfile.createCommentBlock(copyrightBlock);
 
-                    // Re-write file, replacing the first block tagged
-                    // SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG, and commentBlock with
-                    // the copyrightText block.
+                //tag blocks
+                boolean hadAnOldSunCopyright = tagBlocks(pfile);
 
-                    if (fw.canWrite()) {
-                        trace("Updating copyright/license header on file " + fw);
+                // Re-write file, replacing the first block tagged
+                // SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG, and commentBlock with
+                // the copyrightText block.
 
-                        // XXX this is dangerous: a crash before close will destroy the file!
-                        fw.delete();
-                        fw.open(FileWrapper.OpenMode.WRITE);
+                trace("Updating copyright/license header on file " + pfile.toString());
 
-                        boolean firstMatch = true;
-                        boolean firstBlock = true;
-                        for (Block block : pfile.getFileBlocks()) {
-                            if (!hadAnOldSunCopyright && firstBlock) {
-                                if (pfile.commentAfterFirstBlock()) {
-                                    block.write(fw);
-                                    cb.write(fw);
-                                } else {
-                                    cb.write(fw);
-                                    block.write(fw);
-                                }
-                                firstBlock = false;
-                            } else if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG,
-                                    COMMENT_BLOCK_TAG) && firstMatch) {
-                                firstMatch = false;
-                                if (hadAnOldSunCopyright) {
-                                    cb.write(fw);
-                                }
-                            } else {
-                                block.write(fw);
-                            }
+                boolean firstMatch = true;
+                boolean firstBlock = true;
+                List<Block> fileBlocks = pfile.getFileBlocks();
+                List<Block> newFileBlocks =  new ArrayList<Block>();
+                for (Block block : fileBlocks) {
+                    if (!hadAnOldSunCopyright && firstBlock) {
+                        if (pfile.commentAfterFirstBlock()) {
+                            newFileBlocks.add(block);
+                            newFileBlocks.add(cb);
+                        } else {
+                            newFileBlocks.add(cb);
+                            newFileBlocks.add(block);
+                        }
+                        firstBlock = false;
+                    } else if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG,
+                            COMMENT_BLOCK_TAG) && firstMatch) {
+                        firstMatch = false;
+                        if (hadAnOldSunCopyright) {
+                            newFileBlocks.add(cb);
                         }
                     } else {
-                        if (verbose) {
-                            trace("Skipping file " + fw + " because is is not writable");
-                        }
+                        newFileBlocks.add(block);
                     }
-
+                }
+                pfile.setFileBlocks(newFileBlocks);
+                try {
+                    pfile.write();
                 } catch (IOException exc) {
-                    trace("Exception while processing file " + fw + ": " + exc);
+                    trace("Exception while processing file " + pfile.toString() + ": " + exc);
                     exc.printStackTrace();
                     return false;
-                } finally {
-                    fw.close();
                 }
-
-
                 return true;
             }
         };
     }
 
     private boolean tagBlocks(ParsedFile pfile) {
-        FileWrapper fw = pfile.getOriginalFile();
         boolean hadAnOldSunCopyright = false;
         // Tag blocks
         for (Block block : pfile.getFileBlocks()) {
@@ -262,7 +249,7 @@ public class ActionFactory {
         }
 
         if (verbose) {
-            trace("copyrightBlockAction: blocks in file " + fw);
+            trace("copyrightBlockAction: blocks in file " + pfile.toString());
             for (Block block : pfile.getFileBlocks()) {
                 trace("\t" + block);
                 for (String str : block.contents()) {
@@ -272,12 +259,12 @@ public class ActionFactory {
         }
         return hadAnOldSunCopyright;
     }
-    
+
     private void trace(String msg) {
         System.out.println(msg);
     }
 
-    private void validationError(Block block, String msg, FileWrapper fw) {
+    private void validationError(Block block, String msg, String fw) {
         trace("Copyright validation error: " + msg + " for " + fw);
         if ((verbose) && (block != null)) {
             trace("Block=" + block);

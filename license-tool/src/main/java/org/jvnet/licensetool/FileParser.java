@@ -47,11 +47,19 @@ import java.io.IOException;
  */
 public class FileParser {
     public ParsedFile parseFile(FileWrapper file) throws IOException {
-        List<Block> fileAsBlocks = new ArrayList<Block>();
-        fileAsBlocks.add(getBlock(file));
-        return new ParsedFile(file, this, fileAsBlocks,false);
+        return new ParsedFile(file, this) {
+            public boolean commentAfterFirstBlock() {
+                return false;
+            }
+        };
     }
 
+    protected List<Block> parseBlocks(FileWrapper file) throws IOException{
+            List<Block> fileAsBlocks = new ArrayList<Block>();
+            fileAsBlocks.add(getBlock(file));
+            return fileAsBlocks;
+    }
+    
     public Block createCommentBlock(Block commentText) {
         final Block result = new Block(commentText);
         result.addTag(COMMENT_BLOCK_TAG);
@@ -71,8 +79,16 @@ public class FileParser {
             this.commentAfterFirstBlock = commentAfterFirstBlock;
         }
 
-        public ParsedFile parseFile(FileWrapper file) throws IOException {
-            return new ParsedFile(file, this, parseBlocks(file, start, end), commentAfterFirstBlock);
+        public ParsedFile parseFile(final FileWrapper file) throws IOException {
+            return new ParsedFile(file, this) {
+                public boolean commentAfterFirstBlock() {
+                    return commentAfterFirstBlock;
+                }
+            };
+        }
+
+        protected List<Block> parseBlocks(FileWrapper file) throws IOException{
+            return parseBlocks(file, start, end);
         }
 
         public Block createCommentBlock(Block commentText) {
@@ -95,7 +111,17 @@ public class FileParser {
         }
 
         public ParsedFile parseFile(FileWrapper file) throws IOException {
-            return new ParsedFile(file, this, parseBlocks(file, prefix), commentAfterFirstBlock);
+            return new ParsedFile(file, this) {
+                //(file, this, commentAfterFirstBlock);
+
+                public boolean commentAfterFirstBlock() {
+                    return commentAfterFirstBlock;
+                }
+            };
+        }
+
+        protected List<Block> parseBlocks(FileWrapper file) throws IOException{
+            return parseBlocks(file, prefix);
         }
 
         public Block createCommentBlock(Block commentText) {
@@ -113,6 +139,10 @@ public class FileParser {
         public ParsedFile parseFile(FileWrapper file) throws IOException {
            System.out.println("Skipped: " + file);
            return null;
+        }
+
+        protected List<Block> parseBlocks(FileWrapper file) throws IOException{
+            return null;
         }
 
         public Block createCommentBlock(Block commentText) {
@@ -274,7 +304,7 @@ public class FileParser {
 
             return result;
         } finally {
-            fw.close();
+           fw.close();
         }
     }
 
