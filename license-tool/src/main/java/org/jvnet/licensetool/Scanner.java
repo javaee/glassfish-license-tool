@@ -120,6 +120,10 @@ public class Scanner {
                 System.out.println("Exception while processing file " + fw + ": " + exc);
                 exc.printStackTrace();
                 return false;
+            } catch (Exception exc) {
+                System.out.println("Exception while processing file " + fw + ": " + exc);
+                exc.printStackTrace();
+                return false;
             } finally {
                 fw.close();
             }

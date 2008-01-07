@@ -45,7 +45,7 @@ import java.io.IOException;
  * a series of blocks.
  */
 public class Block {
-    private List<String> data ;
+    protected List<String> data ;
     private final Set<String> tags ;
 
     private Block( final List<String> data, final Set<String> tags ) {
@@ -211,6 +211,11 @@ public class Block {
 	return new Block( result ) ;
     }
 
+    public Block replace(Block block) {
+        data = block.data;
+        return this;
+    }
+    
     public Block substitute( List<Pair<String,String>> substitutions ) {
 	List<String> result = new ArrayList<String>() ;
 	for (String line : data) {

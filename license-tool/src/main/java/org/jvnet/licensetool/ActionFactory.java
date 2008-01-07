@@ -93,14 +93,6 @@ public class ActionFactory {
         };
     }
 
-    // Strip out old Sun copyright block.  Prepend new copyrightText.
-    // copyrightText is a Block containing a copyright template in the correct comment format.
-    // parseCall is the correct block parser for splitting the file into Blocks.
-    // defaultStartYear is the default year to use in copyright comments if not
-    // otherwise specified in an old copyright block.
-    // afterFirstBlock is true if the copyright needs to start after the first block in the
-    // file.
-
     public Scanner.Action getValidateCopyrightAction(final Block copyrightBlock) {
         if (verbose) {
             trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock);
@@ -112,7 +104,7 @@ public class ActionFactory {
             }
 
             public boolean evaluate(ParsedFile pfile) {
-                Block cb = pfile.createCommentBlock(copyrightBlock);
+                //Block cb = pfile.createCommentBlock(copyrightBlock);
 
                 //tag blocks
                 boolean hadAnOldSunCopyright = tagBlocks(pfile);
@@ -127,7 +119,7 @@ public class ActionFactory {
                     if (!pfile.commentAfterFirstBlock() && (count == 0)) {
                         if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG,
                                 COMMENT_BLOCK_TAG)) {
-                            if (!cb.equals(block)) {
+                            if (!copyrightBlock.equals(new Block(block.contents()))) {
                                 validationError(block, "First block has incorrect copyright text", pfile.toString());
                             }
                         } else {
@@ -137,7 +129,7 @@ public class ActionFactory {
                         return true;
                     } else if (pfile.commentAfterFirstBlock() && (count == 1)) {
                         if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG, COMMENT_BLOCK_TAG)) {
-                            if (!cb.equals(block)) {
+                            if (!copyrightBlock.equals(new Block(block.contents()))) {
                                 validationError(block, "Second block has incorrect copyright text", pfile.toString());
                             }
                         } else {
@@ -182,7 +174,7 @@ public class ActionFactory {
 
             public boolean evaluate(ParsedFile pfile) {
                 //FileWrapper fw = pfile.getOriginalFile();
-                Block cb = pfile.createCommentBlock(copyrightBlock);
+                Block cb = pfile.insertCommentBlock(copyrightBlock);
 
                 //tag blocks
                 boolean hadAnOldSunCopyright = tagBlocks(pfile);
@@ -216,6 +208,30 @@ public class ActionFactory {
                     } else {
                         newFileBlocks.add(block);
                     }
+                }
+                pfile.setFileBlocks(newFileBlocks);
+                try {
+                    pfile.write();
+                } catch (IOException exc) {
+                    trace("Exception while processing file " + pfile.toString() + ": " + exc);
+                    exc.printStackTrace();
+                    return false;
+                }
+                return true;
+            }
+        };
+    }
+
+    //Just delete the original file and rewrite it to test if parsing and writing back works correctly.
+
+    public Scanner.Action getReWriteCopyrightAction() {
+
+        return new Scanner.Action() {
+            public boolean evaluate(ParsedFile pfile) {
+                List<Block> fileBlocks = pfile.getFileBlocks();
+                List<Block> newFileBlocks =  new ArrayList<Block>();
+                for (Block block : fileBlocks) {
+                        newFileBlocks.add(block);
                 }
                 pfile.setFileBlocks(newFileBlocks);
                 try {

@@ -48,6 +48,10 @@ import java.io.IOException;
 public class FileParser {
     public ParsedFile parseFile(FileWrapper file) throws IOException {
         return new ParsedFile(file, this) {
+            public CommentBlock insertCommentBlock(Block commentText) {
+                return new CommentBlock(commentText.contents());
+            }
+
             public boolean commentAfterFirstBlock() {
                 return false;
             }
@@ -81,6 +85,10 @@ public class FileParser {
 
         public ParsedFile parseFile(final FileWrapper file) throws IOException {
             return new ParsedFile(file, this) {
+                public CommentBlock insertCommentBlock(Block commentText) {
+                    return CommentBlock.BlockComment.createCommentBlock(start, end, prefix,commentText.contents());
+                }
+
                 public boolean commentAfterFirstBlock() {
                     return commentAfterFirstBlock;
                 }
@@ -88,7 +96,7 @@ public class FileParser {
         }
 
         protected List<Block> parseBlocks(FileWrapper file) throws IOException{
-            return parseBlocks(file, start, end);
+            return parseBlocks(file, start, end, prefix);
         }
 
         public Block createCommentBlock(Block commentText) {
@@ -112,7 +120,9 @@ public class FileParser {
 
         public ParsedFile parseFile(FileWrapper file) throws IOException {
             return new ParsedFile(file, this) {
-                //(file, this, commentAfterFirstBlock);
+                public CommentBlock insertCommentBlock(Block commentText) {
+                    return CommentBlock.LineComment.createCommentBlock(prefix, commentText.contents());
+                }
 
                 public boolean commentAfterFirstBlock() {
                     return commentAfterFirstBlock;
@@ -196,10 +206,13 @@ public class FileParser {
                         public List<String> evaluate(List<String> data, String tag) {
                             if (data.size() == 0)
                                 return data;
-
-                            final Block bl = new Block(data);
-                            if (tag != null)
+                            final Block bl;
+                            if(tag != null && tag.equals(COMMENT_BLOCK_TAG)) {
+                                bl = new CommentBlock.LineComment(prefix, data);
                                 bl.addTag(tag);
+                            } else {
+                                bl = new Block(data);
+                            }
                             result.add(bl);
                             return new ArrayList<String>();
                         }
@@ -246,7 +259,7 @@ public class FileParser {
      * <ul>
      */
     public static List<Block> parseBlocks(final FileWrapper fw,
-                                          final String start, final String end) throws IOException {
+                                          final String start, final String end, final String prefix) throws IOException {
 
         boolean inComment = false;
         final List<Block> result = new ArrayList<Block>();
@@ -260,10 +273,13 @@ public class FileParser {
                         public List<String> evaluate(List<String> data, String tag) {
                             if (data.size() == 0)
                                 return data;
-
-                            final Block bl = new Block(data);
-                            if (tag != null)
+                            final Block bl;
+                            if(tag != null && tag.equals(COMMENT_BLOCK_TAG)) {
+                                bl = new CommentBlock.BlockComment(start, end, prefix, data);
                                 bl.addTag(tag);
+                            } else {
+                                bl = new Block(data);
+                            }
                             result.add(bl);
                             return new ArrayList<String>();
                         }
@@ -292,7 +308,6 @@ public class FileParser {
                         data = newBlock.evaluate(data, COMMENT_BLOCK_TAG);
                     }
                 }
-
                 line = fw.readLine();
             }
 

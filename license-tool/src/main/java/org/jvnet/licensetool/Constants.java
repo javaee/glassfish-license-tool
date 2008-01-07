@@ -45,7 +45,7 @@ public class Constants {
     public static final String[] XML_LIKE_SUFFIXES = {
             "htm", "html", "xml", "dtd", "rng", "xsd", "sxd", "vsd"};
     public static final String XML_COMMENT_START = "<!--";
-    public static final String XML_COMMENT_PREFIX = " ";
+    public static final String XML_COMMENT_PREFIX = "";
     public static final String XML_COMMENT_END = "-->";
 
     public static final String[] JAVA_LINE_LIKE_SUFFIXES = {
@@ -62,7 +62,7 @@ public class Constants {
     public static final String[] SHELL_LIKE_SUFFIXES = {
             "classlist", "config", "jmk", "properties", "prp", "xjmk", "set",
             "data", "txt", "text"};
-    public static final String SHELL_PREFIX = "# ";
+    public static final String SHELL_PREFIX = "#";
 
     // Files whose names match these also use the SHELL_PREFIX style line comment.
     public static final String[] MAKEFILE_NAMES = {

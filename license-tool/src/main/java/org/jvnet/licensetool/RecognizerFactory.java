@@ -122,10 +122,12 @@ public class RecognizerFactory {
                     if ((str != null) && str.startsWith("#!")) {
                         return true;
                     }
-                    file.close();
+
                 } catch (IOException exc) {
                     // action is still null
                     System.out.println("Could not read file " + file + " to check for shell script");
+                } finally {
+                    file.close();
                 }
                 return false;
             }            

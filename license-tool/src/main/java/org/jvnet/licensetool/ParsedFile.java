@@ -56,9 +56,7 @@ public abstract class ParsedFile {
         return fileBlocks;
     }
 
-    public Block createCommentBlock(Block commentText) {
-        return parser.createCommentBlock(commentText);
-    }
+    public abstract CommentBlock insertCommentBlock(Block commentText);
 
     public abstract boolean commentAfterFirstBlock();
 
