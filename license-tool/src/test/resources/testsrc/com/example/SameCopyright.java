@@ -40,4 +40,15 @@ package com.example;
 public class SameCopyright {
     // foo: dummy int
     public int foo;
+
+    /**
+     * returns foo.
+     */
+    public int getFoo() {
+        /*
+        just retun it
+        without modifying it.
+        */
+        return foo;
+    }
 }
