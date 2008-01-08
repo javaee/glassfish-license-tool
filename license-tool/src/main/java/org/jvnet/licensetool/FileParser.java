@@ -47,8 +47,8 @@ import java.io.IOException;
  */
 public class FileParser {
     public ParsedFile parseFile(FileWrapper file) throws IOException {
-        return new ParsedFile(file, this) {
-            public CommentBlock insertCommentBlock(Block commentText) {
+        return new ParsedFile(file, this, null) {
+            public CommentBlock createCommentBlock(Block commentText) {
                 return new CommentBlock(commentText.contents());
             }
 
@@ -75,18 +75,21 @@ public class FileParser {
         String end;
         String prefix;
         boolean commentAfterFirstBlock;
+        ParsedFile.InsertCommentAction insertCommentAction;
 
-        public BlockCommentFileParser(String start, String end, String prefix, boolean commentAfterFirstBlock) {
+        public BlockCommentFileParser(String start, String end, String prefix, boolean commentAfterFirstBlock,
+                                      ParsedFile.InsertCommentAction insertCommentAction) {
             this.start = start;
             this.end = end;
             this.prefix = prefix;
             this.commentAfterFirstBlock = commentAfterFirstBlock;
+            this.insertCommentAction = insertCommentAction;
         }
 
         public ParsedFile parseFile(final FileWrapper file) throws IOException {
-            return new ParsedFile(file, this) {
-                public CommentBlock insertCommentBlock(Block commentText) {
-                    return CommentBlock.BlockComment.createCommentBlock(start, end, prefix,commentText.contents());
+            return new ParsedFile(file, this, insertCommentAction) {
+                public CommentBlock createCommentBlock(Block commentText) {
+                    return CommentBlock.BlockComment.createCommentBlock(start, end, prefix,commentText.contents());                    
                 }
 
                 public boolean commentAfterFirstBlock() {
@@ -113,14 +116,17 @@ public class FileParser {
     public static class LineCommentFileParser extends FileParser {
         String prefix;
         boolean commentAfterFirstBlock;
-        public LineCommentFileParser(String prefix,boolean commentAfterFirstBlock) {
+        ParsedFile.InsertCommentAction insertCommentAction;
+        public LineCommentFileParser(String prefix,boolean commentAfterFirstBlock,
+                                     ParsedFile.InsertCommentAction insertCommentAction) {
             this.prefix = prefix;
             this.commentAfterFirstBlock = commentAfterFirstBlock;
+            this.insertCommentAction = insertCommentAction;
         }
 
         public ParsedFile parseFile(FileWrapper file) throws IOException {
-            return new ParsedFile(file, this) {
-                public CommentBlock insertCommentBlock(Block commentText) {
+            return new ParsedFile(file, this, insertCommentAction) {
+                public CommentBlock createCommentBlock(Block commentText) {
                     return CommentBlock.LineComment.createCommentBlock(prefix, commentText.contents());
                 }
 

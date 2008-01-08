@@ -113,6 +113,14 @@ public class Block {
 	this.tags = new HashSet<String>( block.tags ) ;
     }
 
+    protected Object clone() {
+        List<String> blocks = new ArrayList<String>();
+        Set<String> tags = new HashSet<String>();
+        blocks.addAll(data);
+        tags.addAll(tags);
+        return new Block(data,tags);
+    }
+
     /** Add a tag to the block.  Useful for classifying blocks.
      */
     public void addTag( final String tag ) {
