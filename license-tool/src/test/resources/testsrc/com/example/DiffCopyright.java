@@ -22,4 +22,7 @@ public class DiffCopyright {
 
         return foo;
     }
+    /*TODO*/
+    public String bar;/*bar is a String*/
+
 }
