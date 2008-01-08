@@ -111,7 +111,7 @@ public class RecognizerFactory {
 
             public FileParser getParser(FileWrapper file) {
                 if (isShellFile(file)) {
-                    return new FileParser.LineCommentFileParser(SHELL_PREFIX,true,ParsedFile.DEFAULT_INSERT_ACTION);
+                    return new FileParser.LineCommentFileParser(SHELL_PREFIX,true, InsertActionFactory.SHELL_INSERT_COMMENT_ACTION);
                 }
                 return null;
             }
