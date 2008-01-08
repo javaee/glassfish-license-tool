@@ -48,31 +48,22 @@ import java.io.IOException;
  * Represents a parsed file.
  */
 public abstract class ParsedFile {
-    FileParser parser;
-    LinkedList<Block> fileBlocks = null;
-    FileWrapper originalFile;
-    protected ParsedFile(FileWrapper originalFile, FileParser parser) throws IOException{
-        this.parser = parser;
-        fileBlocks = new LinkedList(parser.parseBlocks(originalFile));
-        this.originalFile = originalFile;        
+    final FileWrapper originalFile;
+    protected ParsedFile(FileWrapper originalFile) throws IOException{
+        this.originalFile = originalFile;
     }
 
-    public List<Block> getFileBlocks(){
-        List<Block> blocks = new ArrayList<Block>();
-        for(Block b: fileBlocks) {
-            blocks.add(b);    
-        }
-        return blocks;
-    }
-
+    public abstract List<Block> getFileBlocks();
+    
     public abstract boolean insertCommentBlock(CommentBlock cb);
     
     public abstract CommentBlock createCommentBlock(Block commentText);
 
-    public void setFileBlocks(List<Block> blocks) {
-        this.fileBlocks = new LinkedList(blocks);
-    }
-
+    /**
+     * This is similar to writing back to the original file that got parsed.
+     *
+     * @throws IOException
+     */
     public void write() throws IOException {
       writeTo(originalFile);
     }
@@ -82,7 +73,7 @@ public abstract class ParsedFile {
                 // TODO this is dangerous: a crash before close will destroy the file!
                 fw.delete();
                 fw.open(FileWrapper.OpenMode.WRITE);
-                for (Block block : fileBlocks) {
+                for (Block block : getFileBlocks()) {
                     block.write(fw);
                 }
 

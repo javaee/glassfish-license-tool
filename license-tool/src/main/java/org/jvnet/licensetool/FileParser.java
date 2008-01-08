@@ -41,60 +41,61 @@ import static org.jvnet.licensetool.Tags.*;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.io.IOException;
 
 /**
  * This class parses FileWrappers into (lists of) Blocks.
  */
-public class FileParser {
-    public ParsedFile parseFile(FileWrapper file) throws IOException {
-        return new ParsedFile(file, this) {
-            public boolean insertCommentBlock(CommentBlock cb) {
-                fileBlocks.addFirst(cb);
-                return true;
-            }
+public abstract class FileParser {
 
-            public CommentBlock createCommentBlock(Block commentText) {
-                return new CommentBlock(commentText.contents());
-            }
-        };
-    }
+    public abstract ParsedFile parseFile(FileWrapper file) throws IOException;
 
-    protected List<Block> parseBlocks(FileWrapper file) throws IOException{
-            List<Block> fileAsBlocks = new ArrayList<Block>();
-            fileAsBlocks.add(getBlock(file));
-            return fileAsBlocks;
-    }
+    public abstract Block createCommentBlock(Block commentText);
     
-    public Block createCommentBlock(Block commentText) {
-        final Block result = new Block(commentText);
-        result.addTag(COMMENT_BLOCK_TAG);
-        return result;
-    }
-
     public static class BlockCommentFileParser extends FileParser {
-        String start;
-        String end;
-        String prefix;
+        final String start;
+        final String end;
+        final String prefix;
         public BlockCommentFileParser(String start, String end, String prefix) {
             this.start = start;
             this.end = end;
             this.prefix = prefix;
         }
 
-        public ParsedFile parseFile(final FileWrapper file) throws IOException {
-            return new ParsedFile(file, this) {
-                public boolean insertCommentBlock(CommentBlock cb) {
-                    return false;  //Todo
-                }
+        public class BlockCommentParsedFile extends ParsedFile {
+            LinkedList<Block> fileBlocks = null;
 
-                public CommentBlock createCommentBlock(Block commentText) {
-                    return CommentBlock.BlockComment.createCommentBlock(start, end, prefix,commentText.contents());                    
+            protected BlockCommentParsedFile(FileWrapper originalFile, FileParser parser) throws IOException {
+                super(originalFile);
+                fileBlocks = new LinkedList(parseBlocks(originalFile));
+            }
+
+            public List<Block> getFileBlocks() {
+                List<Block> blocks = new ArrayList<Block>();
+                for (Block b : fileBlocks) {
+                    blocks.add(b);
                 }
-            };
+                return blocks;
+            }
+
+            public boolean insertCommentBlock(CommentBlock cb) {
+                fileBlocks.addFirst(cb);
+                return true;
+            }
+
+            public CommentBlock createCommentBlock(Block commentText) {
+                return CommentBlock.BlockComment.createCommentBlock(start, end, prefix, commentText.contents());
+            }
         }
 
-        protected List<Block> parseBlocks(FileWrapper file) throws IOException{
+        @Override
+        public ParsedFile parseFile(final FileWrapper file) throws IOException {
+            return new BlockCommentParsedFile(file,this);
+
+        }
+
+        private List<Block> parseBlocks(FileWrapper file) throws IOException{
             return parseBlocks(file, start, end, prefix);
         }
 
@@ -116,20 +117,36 @@ public class FileParser {
             this.prefix = prefix;
         }
 
-        public ParsedFile parseFile(FileWrapper file) throws IOException {
-            return new ParsedFile(file, this) {
-                public boolean insertCommentBlock(CommentBlock cb) {
-                    fileBlocks.addFirst(cb);
-                    return true;
-                }
+        public class LineCommentParsedFile extends ParsedFile {
+            LinkedList<Block> fileBlocks = null;
+            protected LineCommentParsedFile(FileWrapper originalFile, FileParser parser) throws IOException {
+                super(originalFile);
+                fileBlocks = new LinkedList(parseBlocks(originalFile));
+            }
 
-                public CommentBlock createCommentBlock(Block commentText) {
-                    return CommentBlock.LineComment.createCommentBlock(prefix, commentText.contents());
+            public List<Block> getFileBlocks() {
+                List<Block> blocks = new ArrayList<Block>();
+                for (Block b : fileBlocks) {
+                    blocks.add(b);
                 }
-            };
+                return blocks;
+            }
+            public boolean insertCommentBlock(CommentBlock cb) {
+                fileBlocks.addFirst(cb);
+                return true;
+            }
+
+            public CommentBlock createCommentBlock(Block commentText) {
+                return CommentBlock.LineComment.createCommentBlock(prefix, commentText.contents());
+            }
+        }
+        
+        @Override
+        public ParsedFile parseFile(FileWrapper file) throws IOException {
+            return new LineCommentParsedFile(file,this);
         }
 
-        protected List<Block> parseBlocks(FileWrapper file) throws IOException{
+        private List<Block> parseBlocks(FileWrapper file) throws IOException{
             return parseBlocks(file, prefix);
         }
 
@@ -150,10 +167,6 @@ public class FileParser {
            return null;
         }
 
-        protected List<Block> parseBlocks(FileWrapper file) throws IOException{
-            return null;
-        }
-
         public Block createCommentBlock(Block commentText) {
             return null;
         }
@@ -166,16 +179,7 @@ public class FileParser {
 
         @Override
         public ParsedFile parseFile(final FileWrapper file) throws IOException {
-            return new ParsedFile(file, this) {
-                public boolean insertCommentBlock(CommentBlock cb) {
-                    fileBlocks.addFirst(cb);
-                    return true;
-                }
-
-                public CommentBlock createCommentBlock(Block commentText) {
-                    return CommentBlock.BlockComment.createCommentBlock(start, end, prefix, commentText.contents());
-                }
-            };
+            return new BlockCommentParsedFile(file, this);
         }
     }
 
@@ -186,74 +190,69 @@ public class FileParser {
 
         @Override
         public ParsedFile parseFile(final FileWrapper file) throws IOException {
-                return new ParsedFile(file, this) {
-                    public boolean insertCommentBlock(CommentBlock cb) {
-                        Block firstBlock = fileBlocks.getFirst();
-                if(firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
-                    fileBlocks.addFirst(cb);
-                } else {
-                    List<String> contents = firstBlock.contents();
-                    String firstLine = contents.get(0);
-                    if(firstLine.trim().startsWith("<?xml")) {
-                        if(!firstLine.trim().endsWith("?>")) {
-                            throw new RuntimeException("Needs special handling");
-                        }
-                        Pair<Block,Block> splitBlocks = firstBlock.splitFirst();
-                        Block xmlDeclaration = splitBlocks.first();
-                        Block restOfXml = splitBlocks.second();
-                        firstBlock.replace(new Block(new ArrayList<String>()));
-                        fileBlocks.addFirst(restOfXml);
+            return new BlockCommentParsedFile(file, this) {
+                @Override
+                public boolean insertCommentBlock(CommentBlock cb) {
+                    Block firstBlock = fileBlocks.getFirst();
+                    if (firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
                         fileBlocks.addFirst(cb);
-                        fileBlocks.addFirst(xmlDeclaration);
                     } else {
-                        fileBlocks.addFirst(cb);
+                        List<String> contents = firstBlock.contents();
+                        String firstLine = contents.get(0);
+                        if (firstLine.trim().startsWith("<?xml")) {
+                            if (!firstLine.trim().endsWith("?>")) {
+                                throw new RuntimeException("Needs special handling");
+                            }
+                            Pair<Block, Block> splitBlocks = firstBlock.splitFirst();
+                            Block xmlDeclaration = splitBlocks.first();
+                            Block restOfXml = splitBlocks.second();
+                            firstBlock.replace(new Block(new ArrayList<String>()));
+                            fileBlocks.addFirst(restOfXml);
+                            fileBlocks.addFirst(cb);
+                            fileBlocks.addFirst(xmlDeclaration);
+                        } else {
+                            fileBlocks.addFirst(cb);
+                        }
                     }
+                    return true;
                 }
-                return true;
-                    }
-
-                    public CommentBlock createCommentBlock(Block commentText) {
-                        return CommentBlock.BlockComment.createCommentBlock(start, end, prefix,commentText.contents());
-                    }
-                };
-            }
+            };
+        }
     }
 
-    public static class ShellLikeFileParser extends FileParser.LineCommentFileParser{
+    public static class ShellLikeFileParser extends FileParser.LineCommentFileParser {
         public ShellLikeFileParser(String prefix) {
             super(prefix);
         }
+
         @Override
         public ParsedFile parseFile(FileWrapper file) throws IOException {
-                return new ParsedFile(file, this) {
-                    public boolean insertCommentBlock(CommentBlock cb) {
-                        Block firstBlock = fileBlocks.getFirst();
-                if(firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
-                  List<String> contents = firstBlock.data;
-                  String firstLine = contents.get(0);
-                    if(firstLine.trim().startsWith("#!")) {
-                        Pair<Block,Block> splitBlocks = firstBlock.splitFirst();
-                        Block sheBangBlock = splitBlocks.first();
-                        Block rest = splitBlocks.second();
-                        firstBlock.replace(new Block(new ArrayList<String>()));
-                        fileBlocks.addFirst(rest);
-                        fileBlocks.addFirst(cb);
-                        fileBlocks.addFirst(sheBangBlock);
+            return new LineCommentParsedFile(file, this) {
+                @Override
+                public boolean insertCommentBlock(CommentBlock cb) {
+                    Block firstBlock = fileBlocks.getFirst();
+                    if (firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
+                        List<String> contents = firstBlock.data;
+                        String firstLine = contents.get(0);
+                        if (firstLine.trim().startsWith("#!")) {
+                            Pair<Block, Block> splitBlocks = firstBlock.splitFirst();
+                            Block sheBangBlock = splitBlocks.first();
+                            Block rest = splitBlocks.second();
+                            firstBlock.replace(new Block(new ArrayList<String>()));
+                            fileBlocks.addFirst(rest);
+                            fileBlocks.addFirst(cb);
+                            fileBlocks.addFirst(sheBangBlock);
+                        } else {
+                            fileBlocks.addFirst(cb);
+                        }
+
                     } else {
                         fileBlocks.addFirst(cb);
                     }
-
-                } else {
-                    fileBlocks.addFirst(cb);
+                    return true;
                 }
-                return true;
-                    }
-
-                    public CommentBlock createCommentBlock(Block commentText) {
-                        return CommentBlock.LineComment.createCommentBlock(prefix, commentText.contents());
-                    }
-                };
-            }
+            };
+        }
     }
 
     /**

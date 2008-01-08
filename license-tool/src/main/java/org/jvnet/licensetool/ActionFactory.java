@@ -228,7 +228,6 @@ public class ActionFactory {
                 for (Block block : fileBlocks) {
                         newFileBlocks.add(block);
                 }
-                pfile.setFileBlocks(newFileBlocks);
                 try {
                     pfile.write();
                 } catch (IOException exc) {
