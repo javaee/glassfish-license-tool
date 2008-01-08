@@ -51,13 +51,10 @@ public abstract class ParsedFile {
     FileParser parser;
     LinkedList<Block> fileBlocks = null;
     FileWrapper originalFile;
-    InsertCommentAction insertCommentAction;
-
-    protected ParsedFile(FileWrapper originalFile, FileParser parser, InsertCommentAction insertCommentAction) throws IOException{
+    protected ParsedFile(FileWrapper originalFile, FileParser parser) throws IOException{
         this.parser = parser;
         fileBlocks = new LinkedList(parser.parseBlocks(originalFile));
-        this.originalFile = originalFile;
-        this.insertCommentAction = insertCommentAction;
+        this.originalFile = originalFile;        
     }
 
     public List<Block> getFileBlocks(){
@@ -68,19 +65,14 @@ public abstract class ParsedFile {
         return blocks;
     }
 
-    public boolean insertCommentBlock(Block commentText) {
-        CommentBlock cb = createCommentBlock(commentText);
-        return insertCommentAction.evaluate(this, cb);
-    }
-
+    public abstract boolean insertCommentBlock(CommentBlock cb);
+    
     public abstract CommentBlock createCommentBlock(Block commentText);
-
-    public abstract boolean commentAfterFirstBlock();
 
     public void setFileBlocks(List<Block> blocks) {
         this.fileBlocks = new LinkedList(blocks);
     }
-    
+
     public void write() throws IOException {
       writeTo(originalFile);
     }
@@ -107,17 +99,4 @@ public abstract class ParsedFile {
         return originalFile.toString();
     }
 
-    /**
-     * Action interface passed to scan method to act on files.
-     * Terminates scan if it returns false.
-     */
-    public interface InsertCommentAction extends BinaryFunction<ParsedFile, CommentBlock, Boolean> {
-    }
-
-    public static InsertCommentAction DEFAULT_INSERT_ACTION = new InsertCommentAction() {
-        public Boolean evaluate(ParsedFile pfile, CommentBlock arg) {
-            System.out.println("No InsertCommentAction registered");
-            return false;
-        }
-    };
 }

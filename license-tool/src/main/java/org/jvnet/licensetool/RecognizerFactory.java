@@ -46,64 +46,62 @@ public class RecognizerFactory {
 
         // Java
         for (String suffix : JAVA_LIKE_SUFFIXES) {
-            recognizer.addRecognizer(suffix, createRecognizer(suffix, JAVA_COMMENT_START,
-                    JAVA_COMMENT_END,JAVA_COMMENT_PREFIX, false, InsertActionFactory.JAVA_INSERT_COMMENT_ACTION));
+            recognizer.addRecognizer(suffix,
+                    new FileSuffixRecognizer(suffix,
+                            new FileParser.JavaFileParser(
+                                    JAVA_COMMENT_START,JAVA_COMMENT_END,JAVA_COMMENT_PREFIX)));
         }
 
         // Java line
 	    for (String suffix : JAVA_LINE_LIKE_SUFFIXES) {
-            recognizer.addRecognizer(suffix, createRecognizer(suffix, JAVA_LINE_PREFIX, false, ParsedFile.DEFAULT_INSERT_ACTION));
+            recognizer.addRecognizer(suffix,
+                    new FileSuffixRecognizer(suffix,
+                            new FileParser.LineCommentFileParser(JAVA_LINE_PREFIX)));
 	    }
 
         // XML
         for (String suffix : XML_LIKE_SUFFIXES) {
-            recognizer.addRecognizer(suffix, createRecognizer(suffix, XML_COMMENT_START,
-                    XML_COMMENT_END, XML_COMMENT_PREFIX, true, InsertActionFactory.XML_INSERT_COMMENT_ACTION));
+            recognizer.addRecognizer(suffix,
+                    new FileSuffixRecognizer(suffix,
+                            new FileParser.XMLFileParser(
+                                    XML_COMMENT_START, XML_COMMENT_END, XML_COMMENT_PREFIX)));
         }
 
         // Scheme
 	    for (String suffix : SCHEME_LIKE_SUFFIXES) {
-		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SCHEME_PREFIX, false, ParsedFile.DEFAULT_INSERT_ACTION));
+		    recognizer.addRecognizer(suffix, new FileSuffixRecognizer(suffix,
+                            new FileParser.LineCommentFileParser(SCHEME_PREFIX)));
 	    }
 
         // Shell
 	    for (String suffix : SHELL_LIKE_SUFFIXES) {
-		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SHELL_PREFIX, false, InsertActionFactory.SHELL_INSERT_COMMENT_ACTION));
+		    recognizer.addRecognizer(suffix,new FileSuffixRecognizer(suffix,
+                            new FileParser.LineCommentFileParser(SHELL_PREFIX)));
 	    }
 
         for (String suffix : MAKEFILE_NAMES) {
-		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SHELL_PREFIX, false, InsertActionFactory.SHELL_INSERT_COMMENT_ACTION));
+		    recognizer.addRecognizer(suffix, new FileSuffixRecognizer(suffix,
+                            new FileParser.LineCommentFileParser(SHELL_PREFIX)));
 	    }
 
         for (String suffix : SHELL_SCRIPT_LIKE_SUFFIXES) {
-		    recognizer.addRecognizer(suffix, createRecognizer(suffix, SHELL_PREFIX, true, InsertActionFactory.SHELL_INSERT_COMMENT_ACTION));
+		    recognizer.addRecognizer(suffix, new FileSuffixRecognizer(suffix,
+                            new FileParser.ShellLikeFileParser(SHELL_PREFIX)));
 	    }
 	    
 	    // Binary
 	    for (String suffix : BINARY_LIKE_SUFFIXES) {
-		    recognizer.addRecognizer(suffix, new FileSuffixRecognizer(suffix, new FileParser.BinaryFileParser()));
+		    recognizer.addRecognizer(suffix,
+                    new FileSuffixRecognizer(suffix, new FileParser.BinaryFileParser()));
 	    }
 
 	    for (String suffix : IGNORE_FILE_NAMES) {
-		    recognizer.addRecognizer(suffix, new FileSuffixRecognizer(suffix, new FileParser.BinaryFileParser()));
+		    recognizer.addRecognizer(suffix,
+                    new FileSuffixRecognizer(suffix, new FileParser.BinaryFileParser()));
 	    }
 
         recognizer.addRecognizer(createShellContentRecognizer());
         return recognizer;
-    }
-
-    FileSuffixRecognizer createRecognizer(String suffix, String start, String end,
-                                          String prefix, boolean commentAfterFirstBlock,
-                                          ParsedFile.InsertCommentAction insertCommentAction) {
-        return new FileSuffixRecognizer(suffix,
-                new FileParser.BlockCommentFileParser(start, end, prefix,commentAfterFirstBlock,insertCommentAction));
-    }
-
-    FileSuffixRecognizer createRecognizer(String suffix, String prefix,
-                                          boolean commentAfterFirstBlock,
-                                          ParsedFile.InsertCommentAction insertCommentAction) {
-        return new FileSuffixRecognizer(suffix,
-                new FileParser.LineCommentFileParser(prefix,commentAfterFirstBlock,insertCommentAction));
     }
 
     FileContentRecognizer createShellContentRecognizer() {
@@ -111,7 +109,7 @@ public class RecognizerFactory {
 
             public FileParser getParser(FileWrapper file) {
                 if (isShellFile(file)) {
-                    return new FileParser.LineCommentFileParser(SHELL_PREFIX,true, InsertActionFactory.SHELL_INSERT_COMMENT_ACTION);
+                    return new FileParser.ShellLikeFileParser(SHELL_PREFIX);
                 }
                 return null;
             }

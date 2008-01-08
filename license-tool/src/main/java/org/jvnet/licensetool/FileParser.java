@@ -36,6 +36,7 @@
 package org.jvnet.licensetool;
 
 import org.jvnet.licensetool.generic.BinaryFunction;
+import org.jvnet.licensetool.generic.Pair;
 import static org.jvnet.licensetool.Tags.*;
 
 import java.util.List;
@@ -47,13 +48,14 @@ import java.io.IOException;
  */
 public class FileParser {
     public ParsedFile parseFile(FileWrapper file) throws IOException {
-        return new ParsedFile(file, this, null) {
-            public CommentBlock createCommentBlock(Block commentText) {
-                return new CommentBlock(commentText.contents());
+        return new ParsedFile(file, this) {
+            public boolean insertCommentBlock(CommentBlock cb) {
+                fileBlocks.addFirst(cb);
+                return true;
             }
 
-            public boolean commentAfterFirstBlock() {
-                return false;
+            public CommentBlock createCommentBlock(Block commentText) {
+                return new CommentBlock(commentText.contents());
             }
         };
     }
@@ -74,26 +76,20 @@ public class FileParser {
         String start;
         String end;
         String prefix;
-        boolean commentAfterFirstBlock;
-        ParsedFile.InsertCommentAction insertCommentAction;
-
-        public BlockCommentFileParser(String start, String end, String prefix, boolean commentAfterFirstBlock,
-                                      ParsedFile.InsertCommentAction insertCommentAction) {
+        public BlockCommentFileParser(String start, String end, String prefix) {
             this.start = start;
             this.end = end;
             this.prefix = prefix;
-            this.commentAfterFirstBlock = commentAfterFirstBlock;
-            this.insertCommentAction = insertCommentAction;
         }
 
         public ParsedFile parseFile(final FileWrapper file) throws IOException {
-            return new ParsedFile(file, this, insertCommentAction) {
-                public CommentBlock createCommentBlock(Block commentText) {
-                    return CommentBlock.BlockComment.createCommentBlock(start, end, prefix,commentText.contents());                    
+            return new ParsedFile(file, this) {
+                public boolean insertCommentBlock(CommentBlock cb) {
+                    return false;  //Todo
                 }
 
-                public boolean commentAfterFirstBlock() {
-                    return commentAfterFirstBlock;
+                public CommentBlock createCommentBlock(Block commentText) {
+                    return CommentBlock.BlockComment.createCommentBlock(start, end, prefix,commentText.contents());                    
                 }
             };
         }
@@ -115,23 +111,20 @@ public class FileParser {
 
     public static class LineCommentFileParser extends FileParser {
         String prefix;
-        boolean commentAfterFirstBlock;
-        ParsedFile.InsertCommentAction insertCommentAction;
-        public LineCommentFileParser(String prefix,boolean commentAfterFirstBlock,
-                                     ParsedFile.InsertCommentAction insertCommentAction) {
+
+        public LineCommentFileParser(String prefix) {
             this.prefix = prefix;
-            this.commentAfterFirstBlock = commentAfterFirstBlock;
-            this.insertCommentAction = insertCommentAction;
         }
 
         public ParsedFile parseFile(FileWrapper file) throws IOException {
-            return new ParsedFile(file, this, insertCommentAction) {
-                public CommentBlock createCommentBlock(Block commentText) {
-                    return CommentBlock.LineComment.createCommentBlock(prefix, commentText.contents());
+            return new ParsedFile(file, this) {
+                public boolean insertCommentBlock(CommentBlock cb) {
+                    fileBlocks.addFirst(cb);
+                    return true;
                 }
 
-                public boolean commentAfterFirstBlock() {
-                    return commentAfterFirstBlock;
+                public CommentBlock createCommentBlock(Block commentText) {
+                    return CommentBlock.LineComment.createCommentBlock(prefix, commentText.contents());
                 }
             };
         }
@@ -164,6 +157,103 @@ public class FileParser {
         public Block createCommentBlock(Block commentText) {
             return null;
         }
+    }
+
+    public static class JavaFileParser extends FileParser.BlockCommentFileParser {
+        public JavaFileParser(String start, String end, String prefix) {
+            super(start, end, prefix);
+        }
+
+        @Override
+        public ParsedFile parseFile(final FileWrapper file) throws IOException {
+            return new ParsedFile(file, this) {
+                public boolean insertCommentBlock(CommentBlock cb) {
+                    fileBlocks.addFirst(cb);
+                    return true;
+                }
+
+                public CommentBlock createCommentBlock(Block commentText) {
+                    return CommentBlock.BlockComment.createCommentBlock(start, end, prefix, commentText.contents());
+                }
+            };
+        }
+    }
+
+    public static class XMLFileParser extends FileParser.BlockCommentFileParser{
+        public XMLFileParser(String start, String end, String prefix) {
+            super(start, end, prefix);
+        }
+
+        @Override
+        public ParsedFile parseFile(final FileWrapper file) throws IOException {
+                return new ParsedFile(file, this) {
+                    public boolean insertCommentBlock(CommentBlock cb) {
+                        Block firstBlock = fileBlocks.getFirst();
+                if(firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
+                    fileBlocks.addFirst(cb);
+                } else {
+                    List<String> contents = firstBlock.contents();
+                    String firstLine = contents.get(0);
+                    if(firstLine.trim().startsWith("<?xml")) {
+                        if(!firstLine.trim().endsWith("?>")) {
+                            throw new RuntimeException("Needs special handling");
+                        }
+                        Pair<Block,Block> splitBlocks = firstBlock.splitFirst();
+                        Block xmlDeclaration = splitBlocks.first();
+                        Block restOfXml = splitBlocks.second();
+                        firstBlock.replace(new Block(new ArrayList<String>()));
+                        fileBlocks.addFirst(restOfXml);
+                        fileBlocks.addFirst(cb);
+                        fileBlocks.addFirst(xmlDeclaration);
+                    } else {
+                        fileBlocks.addFirst(cb);
+                    }
+                }
+                return true;
+                    }
+
+                    public CommentBlock createCommentBlock(Block commentText) {
+                        return CommentBlock.BlockComment.createCommentBlock(start, end, prefix,commentText.contents());
+                    }
+                };
+            }
+    }
+
+    public static class ShellLikeFileParser extends FileParser.LineCommentFileParser{
+        public ShellLikeFileParser(String prefix) {
+            super(prefix);
+        }
+        @Override
+        public ParsedFile parseFile(FileWrapper file) throws IOException {
+                return new ParsedFile(file, this) {
+                    public boolean insertCommentBlock(CommentBlock cb) {
+                        Block firstBlock = fileBlocks.getFirst();
+                if(firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
+                  List<String> contents = firstBlock.data;
+                  String firstLine = contents.get(0);
+                    if(firstLine.trim().startsWith("#!")) {
+                        Pair<Block,Block> splitBlocks = firstBlock.splitFirst();
+                        Block sheBangBlock = splitBlocks.first();
+                        Block rest = splitBlocks.second();
+                        firstBlock.replace(new Block(new ArrayList<String>()));
+                        fileBlocks.addFirst(rest);
+                        fileBlocks.addFirst(cb);
+                        fileBlocks.addFirst(sheBangBlock);
+                    } else {
+                        fileBlocks.addFirst(cb);
+                    }
+
+                } else {
+                    fileBlocks.addFirst(cb);
+                }
+                return true;
+                    }
+
+                    public CommentBlock createCommentBlock(Block commentText) {
+                        return CommentBlock.LineComment.createCommentBlock(prefix, commentText.contents());
+                    }
+                };
+            }
     }
 
     /**

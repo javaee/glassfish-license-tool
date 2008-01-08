@@ -104,6 +104,7 @@ public class ActionFactory {
             }
 
             public boolean evaluate(ParsedFile pfile) {
+               /*
                 //Block cb = pfile.createCommentBlock(copyrightBlock);
                 Block copyrightBlock = (Block) copyrightBlock1.clone();
                 //tag blocks
@@ -148,7 +149,7 @@ public class ActionFactory {
                     count++;
 
                 }
-
+                */
                 return true;
             }
         };
@@ -191,7 +192,7 @@ public class ActionFactory {
                 //List<Block> newFileBlocks =  new ArrayList<Block>();
                 for (Block block : fileBlocks) {
                     if (!hadAnOldSunCopyright && firstBlock) {
-                        pfile.insertCommentBlock(copyrightBlock);
+                        pfile.insertCommentBlock(pfile.createCommentBlock(copyrightBlock));
                         firstBlock = false;
                     } else if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG,
                             COMMENT_BLOCK_TAG) && firstMatch) {
