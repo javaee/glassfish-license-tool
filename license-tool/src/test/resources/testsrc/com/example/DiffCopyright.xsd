@@ -8,7 +8,9 @@
             elementFormDefault="qualified"
             targetNamespace="http://example.com/"
             xmlns:tns="http://example.com/">
-
+    <!-- This is a complex type
+    to hold the return value.
+    -->
     <complexType name="addNumbersResponse">
         <sequence>
             <element name="return" type="xsd:int"/>
@@ -17,7 +19,7 @@
     <element name="addNumbersResponse" type="tns:addNumbersResponse"/>
     <element name="addNumbers2Response" type="tns:addNumbersResponse"/>
     <element name="addNumbers3Response" type="tns:addNumbersResponse"/>
-
+    <!-- contains two elements number1 and number2 -->
     <complexType name="addNumbers">
         <sequence>
             <element name="number1" type="xsd:int"/>
@@ -29,6 +31,9 @@
     <element name="addNumbers3" type="tns:addNumbers"/>
 
     <element name="AddNumbersFault" type="tns:AddNumbersFault"/>
+    <!--
+    represents a fault
+    -->
     <complexType name="AddNumbersFault">
         <sequence>
             <element name="detail" type="xsd:string"/>
