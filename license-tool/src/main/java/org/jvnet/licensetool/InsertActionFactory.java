@@ -47,7 +47,7 @@ public class InsertActionFactory {
         public Boolean evaluate(ParsedFile pfile, CommentBlock cb) {
             Block firstBlock = pfile.fileBlocks.getFirst();
             if(firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
-              List<String> contents = firstBlock.contents();
+              List<String> contents = firstBlock.data;
               String firstLine = contents.get(0);
                 if(firstLine.trim().startsWith("#!")) {
                     Pair<Block,Block> splitBlocks = firstBlock.splitFirst();
