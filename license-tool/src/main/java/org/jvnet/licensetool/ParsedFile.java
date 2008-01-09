@@ -56,6 +56,8 @@ public abstract class ParsedFile {
     public abstract List<Block> getFileBlocks();
     
     public abstract boolean insertCommentBlock(CommentBlock cb);
+
+    public abstract boolean remove(CommentBlock cb);
     
     public abstract CommentBlock createCommentBlock(Block commentText);
 

@@ -45,7 +45,7 @@ import java.io.IOException;
  * a series of blocks.
  */
 public class Block {
-    protected List<String> data ;
+    private List<String> data ;
     private final Set<String> tags ;
 
     private Block( final List<String> data, final Set<String> tags ) {

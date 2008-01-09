@@ -14,11 +14,8 @@ public class CommentBlock extends Block {
     protected List<Pair<String, String>> commentLines = new ArrayList<Pair<String, String>>();
     protected Pair<String, String> commentEnd = null;
 
-    public CommentBlock(final List<String> data) {
-        super(data);
-    }
 
-    public CommentBlock(final Block data) {
+    private CommentBlock(final List<String> data) {
         super(data);
     }
 
@@ -40,6 +37,17 @@ public class CommentBlock extends Block {
 
     public Block replaceText(Block block) {
         return super.replace(block);
+    }
+
+    public int hashCode() {
+        int hash = 0 ;
+	    if(commentStart != null)
+            hash ^= commentStart.hashCode() ;
+        for (Pair<String,String> commentline : commentLines)
+	        hash ^= commentline.hashCode() ;
+        if(commentEnd != null)
+            hash ^= commentEnd.hashCode() ;
+        return hash ;
     }
 
     public boolean equals(Object obj) {
@@ -77,22 +85,22 @@ public class CommentBlock extends Block {
             this.prefix = prefix;
             parse(data);
         }
-
+        /*
         public LineComment(String prefix, final Block dataBlock) {
             super(dataBlock);
             this.prefix = prefix;
-            parse(dataBlock.data);
+            parse(dataBlock.contents());
         }
-
+        */
         public static CommentBlock createCommentBlock(String prefix, final List<String> commentText) {
             Block commentTextBlock = new Block(commentText);
             commentTextBlock.addPrefixToAll(prefix);
-            return new LineComment(prefix, commentTextBlock.data);
+            return new LineComment(prefix, commentTextBlock.contents());
         }
 
         public Block replace(Block blockText) {
             commentLines.clear();
-            for (String str : blockText.data) {
+            for (String str : blockText.contents()) {
                 commentLines.add(new Pair<String, String>(prefix, str));
             }
             // update the block content-view
@@ -123,28 +131,28 @@ public class CommentBlock extends Block {
             this.prefix = prefix;
             parse(data);
         }
-
+        /*
         public BlockComment(String start, String end, String prefix, final Block dataBlock) {
             super(dataBlock);
             this.start = start;
             this.end = end;
             this.prefix = prefix;
-            parse(dataBlock.data);
+            parse(dataBlock.contents());
         }
-
+        */
         public static CommentBlock createCommentBlock(String start, String end, String prefix,
                                                       final List<String> commentText) {
             Block commentTextBlock = new Block(commentText);
             commentTextBlock.addPrefixToAll(prefix);
             commentTextBlock.addBeforeFirst(start);
             commentTextBlock.addAfterLast(end);
-            return new BlockComment(start, end, prefix, commentTextBlock.data);
+            return new BlockComment(start, end, prefix, commentTextBlock.contents());
         }
 
         public Block replace(Block blockText) {
             commentStart = new Pair<String, String>(commentStart.first(), "");
             commentLines.clear();
-            for (String str : blockText.data) {
+            for (String str : blockText.contents()) {
                 commentLines.add(new Pair<String, String>(prefix, str));
             }
             commentEnd = new Pair<String, String>("", commentEnd.second());

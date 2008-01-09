@@ -84,6 +84,11 @@ public abstract class FileParser {
                 return true;
             }
 
+            public boolean remove(CommentBlock cb) {
+                //TODO  take care of comments which have non-comment text before and after the comment.
+                return fileBlocks.remove(cb); 
+            }
+
             public CommentBlock createCommentBlock(Block commentText) {
                 return CommentBlock.BlockComment.createCommentBlock(start, end, prefix, commentText.contents());
             }
@@ -134,6 +139,11 @@ public abstract class FileParser {
             public boolean insertCommentBlock(CommentBlock cb) {
                 fileBlocks.addFirst(cb);
                 return true;
+            }
+
+            public boolean remove(CommentBlock cb) {
+                //TODO  take care of comments which have non-comment text before the comment.
+                return fileBlocks.remove(cb);
             }
 
             public CommentBlock createCommentBlock(Block commentText) {
@@ -232,7 +242,7 @@ public abstract class FileParser {
                 public boolean insertCommentBlock(CommentBlock cb) {
                     Block firstBlock = fileBlocks.getFirst();
                     if (firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
-                        List<String> contents = firstBlock.data;
+                        List<String> contents = firstBlock.contents();
                         String firstLine = contents.get(0);
                         if (firstLine.trim().startsWith("#!")) {
                             Pair<Block, Block> splitBlocks = firstBlock.splitFirst();
