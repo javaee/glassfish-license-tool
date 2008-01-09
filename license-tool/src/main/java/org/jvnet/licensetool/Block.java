@@ -46,7 +46,7 @@ import java.io.IOException;
  * a series of blocks.
  */
 public abstract class Block {
-    Set<String> tags;
+    protected Set<String> tags;
 
     public Block(Set<String> tags) {
         this.tags = tags;
