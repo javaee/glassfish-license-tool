@@ -77,18 +77,19 @@ public abstract class FileParser {
                 return blocks;
             }
 
-            public boolean insertCommentBlock(CommentBlock cb) {
+            public boolean insertCommentBlock(List<String> commentText) {
+                CommentBlock cb = createCommentBlock(commentText);
                 fileBlocks.addFirst(cb);
                 return true;
             }
 
-            public boolean remove(CommentBlock cb) {
+            public boolean remove(Block cb) {
                 //TODO  take care of comments which have non-comment text before and after the comment.
                 return fileBlocks.remove(cb); 
             }
 
-            public CommentBlock createCommentBlock(Block commentText) {
-                return CommentBlock.BlockComment.createCommentBlock(start, end, prefix, commentText.contents());
+            protected CommentBlock createCommentBlock(List<String> commentText) {
+                return CommentBlock.BlockComment.createCommentBlock(start, end, prefix, commentText);
             }
         }
 
@@ -124,18 +125,19 @@ public abstract class FileParser {
                 }
                 return blocks;
             }
-            public boolean insertCommentBlock(CommentBlock cb) {
+            public boolean insertCommentBlock(List<String> commentText) {
+                CommentBlock cb  = createCommentBlock(commentText);
                 fileBlocks.addFirst(cb);
                 return true;
             }
 
-            public boolean remove(CommentBlock cb) {
+            public boolean remove(Block cb) {
                 //TODO  take care of comments which have non-comment text before the comment.
                 return fileBlocks.remove(cb);
             }
 
-            public CommentBlock createCommentBlock(Block commentText) {
-                return CommentBlock.LineComment.createCommentBlock(prefix, commentText.contents());
+            protected CommentBlock createCommentBlock(List<String> commentText) {
+                return CommentBlock.LineComment.createCommentBlock(prefix, commentText);
             }
         }
         
@@ -179,7 +181,8 @@ public abstract class FileParser {
         public ParsedFile parseFile(final FileWrapper file) throws IOException {
             return new BlockCommentParsedFile(file, this) {
                 @Override
-                public boolean insertCommentBlock(CommentBlock cb) {
+                public boolean insertCommentBlock(List<String> commentText) {
+                    CommentBlock cb  = createCommentBlock(commentText);
                     Block firstBlock = fileBlocks.getFirst();
                     if (firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
                         fileBlocks.addFirst(cb);
@@ -193,7 +196,7 @@ public abstract class FileParser {
                             Pair<Block, Block> splitBlocks = firstBlock.splitFirst();
                             Block xmlDeclaration = splitBlocks.first();
                             Block restOfXml = splitBlocks.second();
-                            firstBlock.replace(new Block.PlainBlock(new ArrayList<String>()));
+                            this.remove(firstBlock);
                             fileBlocks.addFirst(restOfXml);
                             fileBlocks.addFirst(cb);
                             fileBlocks.addFirst(xmlDeclaration);
@@ -216,9 +219,11 @@ public abstract class FileParser {
         public ParsedFile parseFile(FileWrapper file) throws IOException {
             return new LineCommentParsedFile(file, this) {
                 @Override
-                public boolean insertCommentBlock(CommentBlock cb) {
-                    Block firstBlock = fileBlocks.getFirst();
-                    if (firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
+                public boolean insertCommentBlock(List<String> commentText) {
+                    CommentBlock cb  = createCommentBlock(commentText);
+                    Block fBlock = fileBlocks.getFirst();
+                    if (fBlock.hasTag(COMMENT_BLOCK_TAG)) {
+                        CommentBlock firstBlock = (CommentBlock)fBlock;
                         List<String> contents = firstBlock.contents();
                         String firstLine = contents.get(0);
                         if (firstLine.trim().startsWith("#!")) {

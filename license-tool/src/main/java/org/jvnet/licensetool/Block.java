@@ -92,6 +92,12 @@ public abstract class Block {
             return data;
         }
 
+        public void write(FileWrapper fw) throws IOException {
+            for (String str : data) {
+                fw.writeLine(str);
+            }
+        }
+
         public boolean equals(Object obj) {
             if (obj == this)
                 return true;
@@ -119,14 +125,6 @@ public abstract class Block {
             for (String str : data)
                 hash ^= data.hashCode();
             return hash;
-        }
-
-        protected Object clone() {
-            List<String> blocks = new ArrayList<String>();
-            Set<String> tags = new HashSet<String>();
-            blocks.addAll(data);
-            tags.addAll(tags);
-            return new PlainBlock(data, tags);
         }
 
         /**
@@ -212,12 +210,14 @@ public abstract class Block {
     /**
      * Get the contents of the block.
      */
+    //TODO TODO REMOVE
     public abstract List<String> contents();
 
 
     /**
      * Return the first string in the block that contains the search string.
      */
+    //TODO TODO REMOVE
     public String find(final String search) {
         for (String str : contents()) {
             if (str.contains(search))
@@ -230,16 +230,10 @@ public abstract class Block {
     /**
      * Write block to FileWrapper.  FileWrapper must be open for writing.
      */
-    public void write(final FileWrapper fw) throws IOException {
-        for (String str : contents()) {
-            fw.writeLine(str);
-        }
-    }
+
+    public abstract void write(final FileWrapper fw) throws IOException;
 
 
-    public abstract Block replace(Block block);
-
-    protected abstract Object clone();
     /**
      * replace all occurrences of @KEY@ with parameters.get( KEY ).
      * This is very simple: only one scan is made, so @...@ patterns

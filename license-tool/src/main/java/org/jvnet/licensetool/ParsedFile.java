@@ -55,12 +55,10 @@ public abstract class ParsedFile {
 
     public abstract List<Block> getFileBlocks();
     
-    public abstract boolean insertCommentBlock(CommentBlock cb);
+    public abstract boolean insertCommentBlock(List<String> cb);
 
-    public abstract boolean remove(CommentBlock cb);
+    public abstract boolean remove(Block cb);
     
-    public abstract CommentBlock createCommentBlock(Block commentText);
-
     /**
      * This is similar to writing back to the original file that got parsed.
      *
@@ -88,8 +86,8 @@ public abstract class ParsedFile {
             fw.close();
         }
     }
-    public String toString() {
+
+    public String getPath() {
         return originalFile.toString();
     }
-
 }

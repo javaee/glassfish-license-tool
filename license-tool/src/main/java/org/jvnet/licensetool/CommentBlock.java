@@ -13,6 +13,8 @@ public abstract class CommentBlock extends Block {
     protected List<Pair<String, String>> commentLines = new ArrayList<Pair<String, String>>();
     protected Pair<String, String> commentEnd = null;
 
+    public abstract Block replace(Block block);
+
     public List<String> contents() {
         List<String> contents = new ArrayList<String>();
         if (commentStart != null)
@@ -25,6 +27,16 @@ public abstract class CommentBlock extends Block {
         return contents;
     }
 
+    public void write(FileWrapper fw) throws IOException {
+        if (commentStart != null)
+            fw.writeLine(commentStart.first() + commentStart.second());
+        for (Pair<String, String> p : commentLines) {
+            fw.writeLine(p.first()+ p.second());
+        }
+        if (commentEnd != null)
+            fw.writeLine(commentEnd.first()+commentEnd.second());
+    }
+    
     public List<String> comment() {
         List<String> contents = new ArrayList<String>();
         if (commentStart != null && !commentStart.second().trim().equals(""))
@@ -35,17 +47,6 @@ public abstract class CommentBlock extends Block {
         if (commentEnd != null && !commentEnd.first().trim().equals(""))
             contents.add(commentEnd.first());
         return contents;
-    }
-
-    public int hashCode() {
-        int hash = 0 ;
-	    if(commentStart != null)
-            hash ^= commentStart.hashCode() ;
-        for (Pair<String,String> commentline : commentLines)
-	        hash ^= commentline.hashCode() ;
-        if(commentEnd != null)
-            hash ^= commentEnd.hashCode() ;
-        return hash ;
     }
 
     public boolean equals(Object obj) {
@@ -78,12 +79,6 @@ public abstract class CommentBlock extends Block {
     public static class LineComment extends CommentBlock {
         String prefix;
 
-        private LineComment(String prefix, final List<String> data, Set<String> tags) {
-            this.tags = tags;
-            this.prefix = prefix;
-            parse(data);
-
-        }
         public LineComment(String prefix, final List<String> data) {
             this.prefix = prefix;
             parse(data);
@@ -111,10 +106,6 @@ public abstract class CommentBlock extends Block {
             return this;
         }
 
-        protected Object clone() {
-            return new LineComment(prefix, contents(), tags);
-        }
-
         private void parse(List<String> data) {
             for (String str : data) {
                 String commmentPrefix = str.substring(0, str.indexOf(prefix) + prefix.length());
@@ -122,6 +113,7 @@ public abstract class CommentBlock extends Block {
                 commentLines.add(new Pair<String, String>(commmentPrefix, commentSuffix));
             }
         }
+
     }
 
     public static class BlockComment extends CommentBlock {
@@ -130,13 +122,6 @@ public abstract class CommentBlock extends Block {
         String end;
 
         public BlockComment(String start, String end, String prefix, final List<String> data) {
-            this.start = start;
-            this.end = end;
-            this.prefix = prefix;
-            parse(data);
-        }
-        private BlockComment(String start, String end, String prefix, final List<String> data, Set<String> tags) {
-            this.tags = tags;
             this.start = start;
             this.end = end;
             this.prefix = prefix;
@@ -151,10 +136,6 @@ public abstract class CommentBlock extends Block {
             parse(dataBlock.contents());
         }
         */
-
-        protected Object clone() {
-            return new BlockComment(start,end,prefix,contents(),tags);
-        }
 
         public static CommentBlock createCommentBlock(String start, String end, String prefix,
                                                       final List<String> commentText) {

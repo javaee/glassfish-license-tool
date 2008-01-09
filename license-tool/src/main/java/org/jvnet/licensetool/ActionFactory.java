@@ -176,7 +176,8 @@ public class ActionFactory {
             public boolean evaluate(ParsedFile pfile) {
                 //FileWrapper fw = pfile.getOriginalFile();
                 //Block cb = pfile.insertCommentBlock(copyrightBlock);
-                Block copyrightBlock = (Block) copyrightBlock1.clone();
+                //TODO Check Block copyrightBlock = (Block) copyrightBlock1.clone();
+                Block copyrightBlock = copyrightBlock1;
                 //tag blocks
                 boolean hadAnOldSunCopyright = tagBlocks(pfile);
 
@@ -184,7 +185,7 @@ public class ActionFactory {
                 // SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG, and commentBlock with
                 // the copyrightText block.
 
-                trace("Updating copyright/license header on file " + pfile.toString());
+                trace("Updating copyright/license header on file " + pfile.getPath());
 
                 boolean firstMatch = true;
                 boolean firstBlock = true;
@@ -192,13 +193,13 @@ public class ActionFactory {
                 //List<Block> newFileBlocks =  new ArrayList<Block>();
                 for (Block block : fileBlocks) {
                     if (!hadAnOldSunCopyright && firstBlock) {
-                        pfile.insertCommentBlock(pfile.createCommentBlock(copyrightBlock));
+                        pfile.insertCommentBlock(copyrightBlock.contents());
                         firstBlock = false;
                     } else if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG,
                             COMMENT_BLOCK_TAG) && firstMatch) {
                         firstMatch = false;
                         if (hadAnOldSunCopyright) {
-                            block.replace(copyrightBlock);
+                            ((CommentBlock)block).replace(copyrightBlock);
                         }
                     } else {
                         //
@@ -208,7 +209,7 @@ public class ActionFactory {
                 try {
                     pfile.write();
                 } catch (IOException exc) {
-                    trace("Exception while processing file " + pfile.toString() + ": " + exc);
+                    trace("Exception while processing file " + pfile.getPath() + ": " + exc);
                     exc.printStackTrace();
                     return false;
                 }
@@ -231,7 +232,7 @@ public class ActionFactory {
                 try {
                     pfile.write();
                 } catch (IOException exc) {
-                    trace("Exception while processing file " + pfile.toString() + ": " + exc);
+                    trace("Exception while processing file " + pfile.getPath() + ": " + exc);
                     exc.printStackTrace();
                     return false;
                 }
@@ -259,7 +260,7 @@ public class ActionFactory {
         }
 
         if (verbose) {
-            trace("copyrightBlockAction: blocks in file " + pfile.toString());
+            trace("copyrightBlockAction: blocks in file " + pfile.getPath());
             for (Block block : pfile.getFileBlocks()) {
                 trace("\t" + block);
                 for (String str : block.contents()) {
