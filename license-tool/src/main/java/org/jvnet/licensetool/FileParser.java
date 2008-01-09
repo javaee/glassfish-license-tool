@@ -51,8 +51,6 @@ public abstract class FileParser {
 
     public abstract ParsedFile parseFile(FileWrapper file) throws IOException;
 
-    public abstract Block createCommentBlock(Block commentText);
-    
     public static class BlockCommentFileParser extends FileParser {
         final String start;
         final String end;
@@ -103,16 +101,6 @@ public abstract class FileParser {
         private List<Block> parseBlocks(FileWrapper file) throws IOException{
             return parseBlocks(file, start, end, prefix);
         }
-
-        public Block createCommentBlock(Block commentText) {
-            final Block result = new Block(commentText);
-            result.addPrefixToAll(prefix);
-            result.addBeforeFirst(start);
-            result.addAfterLast(end);
-            result.addTag(COMMENT_BLOCK_TAG);
-            return result;
-
-        }
     }
 
     public static class LineCommentFileParser extends FileParser {
@@ -159,13 +147,6 @@ public abstract class FileParser {
         private List<Block> parseBlocks(FileWrapper file) throws IOException{
             return parseBlocks(file, prefix);
         }
-
-        public Block createCommentBlock(Block commentText) {
-            final Block result = new Block(commentText);
-            result.addPrefixToAll(prefix);
-            result.addTag(COMMENT_BLOCK_TAG);
-            return result;
-        }
     }
 
     //BinaryFiles have no comment blocks and not parsed.
@@ -175,10 +156,6 @@ public abstract class FileParser {
         public ParsedFile parseFile(FileWrapper file) throws IOException {
            System.out.println("Skipped: " + file);
            return null;
-        }
-
-        public Block createCommentBlock(Block commentText) {
-            return null;
         }
     }
 
@@ -216,7 +193,7 @@ public abstract class FileParser {
                             Pair<Block, Block> splitBlocks = firstBlock.splitFirst();
                             Block xmlDeclaration = splitBlocks.first();
                             Block restOfXml = splitBlocks.second();
-                            firstBlock.replace(new Block(new ArrayList<String>()));
+                            firstBlock.replace(new Block.PlainBlock(new ArrayList<String>()));
                             fileBlocks.addFirst(restOfXml);
                             fileBlocks.addFirst(cb);
                             fileBlocks.addFirst(xmlDeclaration);
@@ -248,7 +225,7 @@ public abstract class FileParser {
                             Pair<Block, Block> splitBlocks = firstBlock.splitFirst();
                             Block sheBangBlock = splitBlocks.first();
                             Block rest = splitBlocks.second();
-                            firstBlock.replace(new Block(new ArrayList<String>()));
+                            firstBlock.replace(new Block.PlainBlock(new ArrayList<String>()));
                             fileBlocks.addFirst(rest);
                             fileBlocks.addFirst(cb);
                             fileBlocks.addFirst(sheBangBlock);
@@ -280,7 +257,7 @@ public abstract class FileParser {
                 line = fw.readLine();
             }
 
-            return new Block(data);
+            return new Block.PlainBlock(data);
         } finally {
             fw.close();
         }
@@ -316,7 +293,7 @@ public abstract class FileParser {
                                 bl = new CommentBlock.LineComment(prefix, data);
                                 bl.addTag(tag);
                             } else {
-                                bl = new Block(data);
+                                bl = new Block.PlainBlock(data);
                             }
                             result.add(bl);
                             return new ArrayList<String>();
@@ -342,7 +319,7 @@ public abstract class FileParser {
             }
 
             // Create last block!
-            Block bl = new Block(data);
+            Block bl = new Block.PlainBlock(data);
             if (inComment)
                 bl.addTag(COMMENT_BLOCK_TAG);
             result.add(bl);
@@ -383,7 +360,7 @@ public abstract class FileParser {
                                 bl = new CommentBlock.BlockComment(start, end, prefix, data);
                                 bl.addTag(tag);
                             } else {
-                                bl = new Block(data);
+                                bl = new Block.PlainBlock(data);
                             }
                             result.add(bl);
                             return new ArrayList<String>();
@@ -417,7 +394,7 @@ public abstract class FileParser {
             }
 
             // Create last block!
-            Block bl = new Block(data);
+            Block bl = new Block.PlainBlock(data);
             if (inComment)
                 bl.addTag(COMMENT_BLOCK_TAG);
             result.add(bl);

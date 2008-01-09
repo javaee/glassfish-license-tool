@@ -2,28 +2,30 @@ package org.jvnet.licensetool;
 
 import org.jvnet.licensetool.generic.Pair;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
+import java.io.IOException;
 
 /**
  * Marker for CommentBlock
  */
-public class CommentBlock extends Block {
+public abstract class CommentBlock extends Block {
     protected Pair<String, String> commentStart = null;
     protected List<Pair<String, String>> commentLines = new ArrayList<Pair<String, String>>();
     protected Pair<String, String> commentEnd = null;
 
-
-    private CommentBlock(final List<String> data) {
-        super(data);
-    }
-
-    public static CommentBlock createCommentBlock(final List<String> commentText) {
-        return new CommentBlock(commentText);
-    }
-
     public List<String> contents() {
+        List<String> contents = new ArrayList<String>();
+        if (commentStart != null)
+            contents.add(commentStart.first() + commentStart.second());
+        for (Pair<String, String> p : commentLines) {
+            contents.add(p.first()+ p.second());
+        }
+        if (commentEnd != null)
+            contents.add(commentEnd.first()+commentEnd.second());
+        return contents;
+    }
+
+    public List<String> comment() {
         List<String> contents = new ArrayList<String>();
         if (commentStart != null && !commentStart.second().trim().equals(""))
             contents.add(commentStart.second());
@@ -33,10 +35,6 @@ public class CommentBlock extends Block {
         if (commentEnd != null && !commentEnd.first().trim().equals(""))
             contents.add(commentEnd.first());
         return contents;
-    }
-
-    public Block replaceText(Block block) {
-        return super.replace(block);
     }
 
     public int hashCode() {
@@ -80,8 +78,13 @@ public class CommentBlock extends Block {
     public static class LineComment extends CommentBlock {
         String prefix;
 
+        private LineComment(String prefix, final List<String> data, Set<String> tags) {
+            this.tags = tags;
+            this.prefix = prefix;
+            parse(data);
+
+        }
         public LineComment(String prefix, final List<String> data) {
-            super(data);
             this.prefix = prefix;
             parse(data);
         }
@@ -93,21 +96,23 @@ public class CommentBlock extends Block {
         }
         */
         public static CommentBlock createCommentBlock(String prefix, final List<String> commentText) {
-            Block commentTextBlock = new Block(commentText);
-            commentTextBlock.addPrefixToAll(prefix);
-            return new LineComment(prefix, commentTextBlock.contents());
+            final List<String> commentTextBlock = new ArrayList<String>();
+            for (String str : commentText) {
+	            commentTextBlock.add( prefix + str ) ;
+	        }
+            return new LineComment(prefix, commentTextBlock);
         }
 
-        public Block replace(Block blockText) {
+        public Block replace(Block block) {
             commentLines.clear();
-            for (String str : blockText.contents()) {
+            for (String str : block.contents()) {
                 commentLines.add(new Pair<String, String>(prefix, str));
             }
-            // update the block content-view
-            blockText.addPrefixToAll(prefix);
-            super.replace(blockText);
-
             return this;
+        }
+
+        protected Object clone() {
+            return new LineComment(prefix, contents(), tags);
         }
 
         private void parse(List<String> data) {
@@ -125,7 +130,13 @@ public class CommentBlock extends Block {
         String end;
 
         public BlockComment(String start, String end, String prefix, final List<String> data) {
-            super(data);
+            this.start = start;
+            this.end = end;
+            this.prefix = prefix;
+            parse(data);
+        }
+        private BlockComment(String start, String end, String prefix, final List<String> data, Set<String> tags) {
+            this.tags = tags;
             this.start = start;
             this.end = end;
             this.prefix = prefix;
@@ -140,29 +151,32 @@ public class CommentBlock extends Block {
             parse(dataBlock.contents());
         }
         */
-        public static CommentBlock createCommentBlock(String start, String end, String prefix,
-                                                      final List<String> commentText) {
-            Block commentTextBlock = new Block(commentText);
-            commentTextBlock.addPrefixToAll(prefix);
-            commentTextBlock.addBeforeFirst(start);
-            commentTextBlock.addAfterLast(end);
-            return new BlockComment(start, end, prefix, commentTextBlock.contents());
+
+        protected Object clone() {
+            return new BlockComment(start,end,prefix,contents(),tags);
         }
 
-        public Block replace(Block blockText) {
+        public static CommentBlock createCommentBlock(String start, String end, String prefix,
+                                                      final List<String> commentText) {
+            final List<String> commentTextBlock = new ArrayList<String>();
+            for (String str : commentText) {
+	            commentTextBlock.add( prefix + str ) ;
+	        }
+	        commentTextBlock.add(0,start);
+            commentTextBlock.add(commentTextBlock.size(), end);
+            return new BlockComment(start, end, prefix, commentTextBlock);
+        }
+
+        public Block replace(Block block) {
             commentStart = new Pair<String, String>(commentStart.first(), "");
             commentLines.clear();
-            for (String str : blockText.contents()) {
+            for (String str : block.contents()) {
                 commentLines.add(new Pair<String, String>(prefix, str));
             }
             commentEnd = new Pair<String, String>("", commentEnd.second());
 
             // update the block content-view
-            blockText.addPrefixToAll(prefix);
-            blockText.addBeforeFirst(commentStart.first());
-            blockText.addAfterLast(commentEnd.second());
-
-            return super.replace(blockText);
+            return this;
         }
 
         private void parse(List<String> data) {
