@@ -42,7 +42,6 @@ import static org.jvnet.licensetool.Tags.COMMENT_BLOCK_TAG;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.io.IOException;
 
 /**
@@ -96,10 +95,10 @@ public class LineCommentFile {
             }
 
             public class LineCommentParsedFile extends ParsedFile {
-                protected LinkedList<Block> fileBlocks = null;
+                protected List<Block> fileBlocks = null;
                 protected LineCommentParsedFile(FileWrapper originalFile, FileParser parser) throws IOException {
                     super(originalFile);
-                    fileBlocks = new LinkedList(parseBlocks(originalFile));
+                    fileBlocks = new ArrayList(parseBlocks(originalFile));
                 }
 
                 public List<Block> getFileBlocks() {
@@ -111,7 +110,7 @@ public class LineCommentFile {
                 }
                 public boolean insertCommentBlock(List<String> commentText) {
                     CommentBlock cb  = createCommentBlock(commentText);
-                    fileBlocks.addFirst(cb);
+                    fileBlocks.add(0,cb);
                     return true;
                 }
 

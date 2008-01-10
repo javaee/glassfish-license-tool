@@ -35,11 +35,8 @@
  */
 package org.jvnet.licensetool.file;
 
-import org.jvnet.licensetool.generic.BinaryFunction;
-import static org.jvnet.licensetool.Tags.*;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.io.IOException;
 
 /**
