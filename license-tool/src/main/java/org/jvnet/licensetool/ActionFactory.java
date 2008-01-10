@@ -249,16 +249,19 @@ public class ActionFactory {
         boolean hadAnOldSunCopyright = false;
         // Tag blocks
         for (Block block : pfile.getFileBlocks()) {
-            String str = block.find(COPYRIGHT);
-            if (str != null) {
-                block.addTag(COPYRIGHT_BLOCK_TAG);
-                String cddl = block.find("CDDL");
-                if (cddl != null) {
-                    block.addTag("CDDL_TAG");
-                }
-                if (str.contains("Sun")) {
-                    block.addTag(SUN_COPYRIGHT_TAG);
-                    hadAnOldSunCopyright = true;
+            if(block instanceof CommentBlock) {
+                CommentBlock cb = (CommentBlock)block;
+                String str = cb.find(COPYRIGHT);
+                if (str != null) {
+                    block.addTag(COPYRIGHT_BLOCK_TAG);
+                    String cddl = cb.find("CDDL");
+                    if (cddl != null) {
+                        block.addTag("CDDL_TAG");
+                    }
+                    if (str.contains("Sun")) {
+                        block.addTag(SUN_COPYRIGHT_TAG);
+                        hadAnOldSunCopyright = true;
+                    }
                 }
             }
         }
