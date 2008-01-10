@@ -64,31 +64,6 @@ public class PlainBlock extends Block {
         }
 
         /**
-         * Add String before the start of the block.
-         */
-        public void addBeforeFirst(final String str) {
-            data.add(0, str);
-        }
-
-        /**
-         * Add String after the end of the block.
-         */
-        public void addAfterLast(final String str) {
-            data.add(data.size(), str);
-        }
-
-        /**
-         * Add the prefix to each string in the block.
-         */
-        public void addPrefixToAll(String prefix) {
-            final List<String> newData = new ArrayList<String>();
-            for (String str : data) {
-                newData.add(prefix + str);
-            }
-            data = newData;
-        }
-
-        /**
          * replace all occurrences of @KEY@ with parameters.get( KEY ).
          * This is very simple: only one scan is made, so @...@ patterns
          * in the parameters values are ignored.
