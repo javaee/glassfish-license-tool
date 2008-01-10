@@ -47,47 +47,6 @@ import java.util.ArrayList;
  * @author Rama Pulavarthi
  */
 public class FileParserFactory {
-    
-
-    public static class XMLFileParser extends MultiLineCommentFile.MultiLineCommentFileParser {
-        public XMLFileParser(String start, String end, String prefix) {
-            super(start, end, prefix);
-        }
-
-        @Override
-        public ParsedFile parseFile(final FileWrapper file) throws IOException {
-            return new BlockCommentParsedFile(file, this) {
-                @Override
-                public boolean insertCommentBlock(List<String> commentText) {
-                    CommentBlock cb  = createCommentBlock(commentText);
-                    Block firstBlock = fileBlocks.getFirst();
-                    if (firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
-                        fileBlocks.addFirst(cb);
-                    } else {
-                        PlainBlock plainBlock = (PlainBlock) firstBlock;
-                        List<String> contents = plainBlock.contents();
-                        String firstLine = contents.get(0);
-                        if (firstLine.trim().startsWith("<?xml")) {
-                            if (!firstLine.trim().endsWith("?>")) {
-                                throw new RuntimeException("Needs special handling");
-                            }
-                            Pair<Block, Block> splitBlocks = plainBlock.splitFirst();
-                            Block xmlDeclaration = splitBlocks.first();
-                            Block restOfXml = splitBlocks.second();
-                            this.remove(plainBlock);
-                            fileBlocks.addFirst(restOfXml);
-                            fileBlocks.addFirst(cb);
-                            fileBlocks.addFirst(xmlDeclaration);
-                        } else {
-                            fileBlocks.addFirst(cb);
-                        }
-                    }
-                    return true;
-                }
-            };
-        }
-    }
-
     public static class ShellLikeFileParser extends
             LineCommentFile.LineCommentFileParser {
         public ShellLikeFileParser(String prefix) {
@@ -99,10 +58,10 @@ public class FileParserFactory {
             return new LineCommentParsedFile(file, this) {
                 @Override
                 public boolean insertCommentBlock(List<String> commentText) {
-                    CommentBlock cb  = createCommentBlock(commentText);
+                    CommentBlock cb = createCommentBlock(commentText);
                     Block fBlock = fileBlocks.getFirst();
                     if (fBlock.hasTag(COMMENT_BLOCK_TAG)) {
-                        CommentBlock firstBlock = (CommentBlock)fBlock;
+                        CommentBlock firstBlock = (CommentBlock) fBlock;
                         List<String> contents = firstBlock.contents();
                         String firstLine = contents.get(0);
 
@@ -110,7 +69,7 @@ public class FileParserFactory {
                             List<String> blContents = firstBlock.contents();
                             List<String> first = new ArrayList<String>();
                             List<String> rest = new ArrayList<String>();
-                            for(String str: blContents) {
+                            for (String str : blContents) {
                                 if (first.size() == 0) {
                                     first.add(str);
                                 } else {
@@ -118,8 +77,8 @@ public class FileParserFactory {
                                 }
                             }
 
-                            Block sheBangBlock = new LineCommentFile.LineCommentBlock(prefix,first);
-                            Block restBlock = new LineCommentFile.LineCommentBlock(prefix,rest);
+                            Block sheBangBlock = new LineCommentFile.LineCommentBlock(prefix, first);
+                            Block restBlock = new LineCommentFile.LineCommentBlock(prefix, rest);
                             firstBlock.replace(new PlainBlock(new ArrayList<String>()));
                             fileBlocks.addFirst(restBlock);
                             fileBlocks.addFirst(cb);
@@ -137,28 +96,70 @@ public class FileParserFactory {
         }
     }
 
-
     //BinaryFiles have no comment blocks and not parsed.
     // this is just to convince the Tool that the file is
     // recognized and ignored.
     public static class BinaryFileParser extends FileParser {
         public ParsedFile parseFile(FileWrapper file) throws IOException {
-           System.out.println("Skipped: " + file);
-           return null;
+            System.out.println("Skipped: " + file);
+            return null;
         }
     }
 
-    public static class JavaFileParser extends MultiLineCommentFile.MultiLineCommentFileParser {
-        public JavaFileParser(String start, String end, String prefix) {
-            super(start, end, prefix);
-        }
+    public static FileParser createJavaFileParser() {
+        final String JAVA_COMMENT_START = "/*";
+        final String JAVA_COMMENT_PREFIX = " *";
+        final String JAVA_COMMENT_END = "*/";
+        return new MultiLineCommentFile.MultiLineCommentFileParser(JAVA_COMMENT_START, JAVA_COMMENT_END, JAVA_COMMENT_PREFIX) {
+            @Override
+            public ParsedFile parseFile(final FileWrapper file) throws IOException {
+                return new BlockCommentParsedFile(file, this);
+            }
+        };
 
-        @Override
-        public ParsedFile parseFile(final FileWrapper file) throws IOException {
-            return new BlockCommentParsedFile(file, this);
-        }
     }
 
+    public static FileParser createXMLFileParser() {
+        final String XML_COMMENT_START = "<!--";
+        final String XML_COMMENT_PREFIX = "";
+        final String XML_COMMENT_END = "-->";
 
+        return new MultiLineCommentFile.MultiLineCommentFileParser(
+                XML_COMMENT_START, XML_COMMENT_END, XML_COMMENT_PREFIX) {
+
+            @Override
+            public ParsedFile parseFile(final FileWrapper file) throws IOException {
+                return new BlockCommentParsedFile(file, this) {
+                    @Override
+                    public boolean insertCommentBlock(List<String> commentText) {
+                        CommentBlock cb = createCommentBlock(commentText);
+                        Block firstBlock = fileBlocks.getFirst();
+                        if (firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
+                            fileBlocks.addFirst(cb);
+                        } else {
+                            PlainBlock plainBlock = (PlainBlock) firstBlock;
+                            List<String> contents = plainBlock.contents();
+                            String firstLine = contents.get(0);
+                            if (firstLine.trim().startsWith("<?xml")) {
+                                if (!firstLine.trim().endsWith("?>")) {
+                                    throw new RuntimeException("Needs special handling");
+                                }
+                                Pair<Block, Block> splitBlocks = plainBlock.splitFirst();
+                                Block xmlDeclaration = splitBlocks.first();
+                                Block restOfXml = splitBlocks.second();
+                                this.remove(plainBlock);
+                                fileBlocks.addFirst(restOfXml);
+                                fileBlocks.addFirst(cb);
+                                fileBlocks.addFirst(xmlDeclaration);
+                            } else {
+                                fileBlocks.addFirst(cb);
+                            }
+                        }
+                        return true;
+                    }
+                };
+            }
+        };
+    }
 
 }

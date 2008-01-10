@@ -38,15 +38,9 @@ package org.jvnet.licensetool;
 public class Constants {
     public static final String[] JAVA_LIKE_SUFFIXES = {
             "c", "h", "java", "sjava", "idl"};
-    public static final String JAVA_COMMENT_START = "/*";
-    public static final String JAVA_COMMENT_PREFIX = " *";
-    public static final String JAVA_COMMENT_END = "*/";
-
     public static final String[] XML_LIKE_SUFFIXES = {
             "htm", "html", "xml", "dtd", "rng", "xsd", "sxd", "vsd"};
-    public static final String XML_COMMENT_START = "<!--";
-    public static final String XML_COMMENT_PREFIX = "";
-    public static final String XML_COMMENT_END = "-->";
+   
 
     public static final String[] JAVA_LINE_LIKE_SUFFIXES = {
             "tdesc", "policy", "secure"};

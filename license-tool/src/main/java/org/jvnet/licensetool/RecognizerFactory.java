@@ -55,8 +55,7 @@ public class RecognizerFactory {
         for (String suffix : JAVA_LIKE_SUFFIXES) {
             recognizer.addRecognizer(suffix,
                     new FileSuffixRecognizer(suffix,
-                            new FileParserFactory.JavaFileParser(
-                                    JAVA_COMMENT_START,JAVA_COMMENT_END,JAVA_COMMENT_PREFIX)));
+                            FileParserFactory.createJavaFileParser()));
         }
 
         // Java line
@@ -70,8 +69,7 @@ public class RecognizerFactory {
         for (String suffix : XML_LIKE_SUFFIXES) {
             recognizer.addRecognizer(suffix,
                     new FileSuffixRecognizer(suffix,
-                            new FileParserFactory.XMLFileParser(
-                                    XML_COMMENT_START, XML_COMMENT_END, XML_COMMENT_PREFIX)));
+                            FileParserFactory.createXMLFileParser()));
         }
 
         // Scheme
