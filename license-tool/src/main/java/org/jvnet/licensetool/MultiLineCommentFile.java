@@ -109,13 +109,14 @@ public class MultiLineCommentFile {
                         String startCommentSuffix;
                         String rest = str.substring(index + start.length());
                         int endindex = rest.indexOf(end);
-                        if (endindex >= 0) {
-                            startCommentSuffix = rest.substring(0, endindex);
-                            String endCommentSuffix = rest.substring(endindex);
-                            commentEnd = new Pair<String, String>("", endCommentSuffix);
-                        } else {
+                        //TODO TODO single line comment fix later
+//                        if (endindex >= 0) {
+//                            startCommentSuffix = rest.substring(0, endindex);
+//                            String endCommentSuffix = rest.substring(endindex);
+//                            commentEnd = new Pair<String, String>("", endCommentSuffix);
+//                        } else {
                             startCommentSuffix = rest;
-                        }
+//                        }
                         commentStart = new Pair<String, String>(startCommmentPrefix, startCommentSuffix);
                     }
                 } else if (i == (data.size() - 1)) {
