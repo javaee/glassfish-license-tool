@@ -36,8 +36,15 @@
 package org.jvnet.licensetool;
 
 import static org.jvnet.licensetool.Constants.*;
+import org.jvnet.licensetool.file.FileParser;
+import org.jvnet.licensetool.file.FileRecognizer;
+import org.jvnet.licensetool.file.FileWrapper;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 public class RecognizerFactory {
     public FileRecognizer getDefaultRecognizer() {
@@ -48,7 +55,7 @@ public class RecognizerFactory {
         for (String suffix : JAVA_LIKE_SUFFIXES) {
             recognizer.addRecognizer(suffix,
                     new FileSuffixRecognizer(suffix,
-                            new FileParser.JavaFileParser(
+                            new FileParserFactory.JavaFileParser(
                                     JAVA_COMMENT_START,JAVA_COMMENT_END,JAVA_COMMENT_PREFIX)));
         }
 
@@ -56,48 +63,48 @@ public class RecognizerFactory {
 	    for (String suffix : JAVA_LINE_LIKE_SUFFIXES) {
             recognizer.addRecognizer(suffix,
                     new FileSuffixRecognizer(suffix,
-                            new FileParser.LineCommentFileParser(JAVA_LINE_PREFIX)));
+                            new LineCommentFile.LineCommentFileParser(JAVA_LINE_PREFIX)));
 	    }
 
         // XML
         for (String suffix : XML_LIKE_SUFFIXES) {
             recognizer.addRecognizer(suffix,
                     new FileSuffixRecognizer(suffix,
-                            new FileParser.XMLFileParser(
+                            new FileParserFactory.XMLFileParser(
                                     XML_COMMENT_START, XML_COMMENT_END, XML_COMMENT_PREFIX)));
         }
 
         // Scheme
 	    for (String suffix : SCHEME_LIKE_SUFFIXES) {
 		    recognizer.addRecognizer(suffix, new FileSuffixRecognizer(suffix,
-                            new FileParser.LineCommentFileParser(SCHEME_PREFIX)));
+                            new LineCommentFile.LineCommentFileParser(SCHEME_PREFIX)));
 	    }
 
         // Shell
 	    for (String suffix : SHELL_LIKE_SUFFIXES) {
 		    recognizer.addRecognizer(suffix,new FileSuffixRecognizer(suffix,
-                            new FileParser.LineCommentFileParser(SHELL_PREFIX)));
+                            new LineCommentFile.LineCommentFileParser(SHELL_PREFIX)));
 	    }
 
         for (String suffix : MAKEFILE_NAMES) {
 		    recognizer.addRecognizer(suffix, new FileSuffixRecognizer(suffix,
-                            new FileParser.LineCommentFileParser(SHELL_PREFIX)));
+                            new LineCommentFile.LineCommentFileParser(SHELL_PREFIX)));
 	    }
 
         for (String suffix : SHELL_SCRIPT_LIKE_SUFFIXES) {
 		    recognizer.addRecognizer(suffix, new FileSuffixRecognizer(suffix,
-                            new FileParser.ShellLikeFileParser(SHELL_PREFIX)));
+                            new FileParserFactory.ShellLikeFileParser(SHELL_PREFIX)));
 	    }
 	    
 	    // Binary
 	    for (String suffix : BINARY_LIKE_SUFFIXES) {
 		    recognizer.addRecognizer(suffix,
-                    new FileSuffixRecognizer(suffix, new FileParser.BinaryFileParser()));
+                    new FileSuffixRecognizer(suffix, new FileParserFactory.BinaryFileParser()));
 	    }
 
 	    for (String suffix : IGNORE_FILE_NAMES) {
 		    recognizer.addRecognizer(suffix,
-                    new FileSuffixRecognizer(suffix, new FileParser.BinaryFileParser()));
+                    new FileSuffixRecognizer(suffix, new FileParserFactory.BinaryFileParser()));
 	    }
 
         recognizer.addRecognizer(createShellContentRecognizer());
@@ -109,7 +116,7 @@ public class RecognizerFactory {
 
             public FileParser getParser(FileWrapper file) {
                 if (isShellFile(file)) {
-                    return new FileParser.ShellLikeFileParser(SHELL_PREFIX);
+                    return new FileParserFactory.ShellLikeFileParser(SHELL_PREFIX);
                 }
                 return null;
             }
@@ -133,6 +140,63 @@ public class RecognizerFactory {
             }            
         };
 
+    }
+
+
+    /**
+ * This class uses the file name suffix to identify the type of file.
+     */
+    public static class FileSuffixRecognizer implements FileRecognizer {
+        final String  suffix;
+        final FileParser parser;
+
+        public FileSuffixRecognizer(String suffix, FileParser parser) {
+            this.suffix = suffix;
+            this.parser = parser;
+        }
+        public FileParser getParser(FileWrapper file) {
+            return parser;
+        }
+    }
+
+    /**
+ * This class marks as a tag and FileContentRecognizer identifies a file based on the contents of the file.
+     *
+     */
+    public static class FileContentRecognizer implements FileRecognizer {
+
+        public FileParser getParser(FileWrapper file) {
+            return null;
+        }
+    }
+
+    public static class CompositeRecognizer implements FileRecognizer{
+        Map<String, FileRecognizer> suffixRecognizers = new HashMap<String, FileRecognizer>();
+        List<FileRecognizer> contentRecognizers = new ArrayList<FileRecognizer>();
+
+        public FileParser getParser(FileWrapper file) {
+            FileRecognizer recognizer = suffixRecognizers.get(file.getSuffix());
+            if(recognizer != null) {
+                return recognizer.getParser(file);
+            }
+
+            for (FileRecognizer r : contentRecognizers) {
+                FileParser bp = r.getParser(file);
+                if (bp != null) {
+                    return bp;
+                }
+            }
+
+            return null;
+        }
+
+        public void addRecognizer(FileRecognizer recognizer) {
+            contentRecognizers.add(recognizer);
+        }
+
+        public void addRecognizer(String suffix, FileRecognizer recognizer) {
+            suffixRecognizers.put(suffix, recognizer);
+        }
     }
 
 

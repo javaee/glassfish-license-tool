@@ -33,12 +33,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.jvnet.licensetool;
+package org.jvnet.licensetool.file;
+
+import org.jvnet.licensetool.generic.BinaryFunction;
+import static org.jvnet.licensetool.Tags.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.io.IOException;
 
 /**
- * Recognizes files according to patterns, and gives a suitable parser.
+ * This class parses FileWrappers into (lists of) Blocks.
  */
+public abstract class FileParser {
 
-public interface FileRecognizer {
-    FileParser getParser(FileWrapper file);    
+    public abstract ParsedFile parseFile(FileWrapper file) throws IOException;
+
+    /**
+     * Return the contents of the text file as a Block.
+     */
+    public static PlainBlock getBlock(final FileWrapper fw) throws IOException {
+        fw.open(FileWrapper.OpenMode.READ);
+
+        try {
+            final List<String> data = new ArrayList<String>();
+
+            String line = fw.readLine();
+            while (line != null) {
+                data.add(line);
+                line = fw.readLine();
+            }
+
+            return new PlainBlock(data);
+        } finally {
+            fw.close();
+        }
+    }
+
 }

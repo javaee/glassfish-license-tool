@@ -36,6 +36,10 @@
 package org.jvnet.licensetool;
 
 import org.jvnet.licensetool.generic.UnaryBooleanFunction;
+import org.jvnet.licensetool.file.ParsedFile;
+import org.jvnet.licensetool.file.FileParser;
+import org.jvnet.licensetool.file.FileRecognizer;
+import org.jvnet.licensetool.file.FileWrapper;
 
 import java.io.File;
 import java.io.IOException;

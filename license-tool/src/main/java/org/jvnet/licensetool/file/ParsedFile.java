@@ -33,15 +33,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.jvnet.licensetool;
+package org.jvnet.licensetool.file;
 
-import org.jvnet.licensetool.generic.UnaryBooleanFunction;
-import org.jvnet.licensetool.generic.UnaryFunction;
-import org.jvnet.licensetool.generic.BinaryFunction;
+import org.jvnet.licensetool.file.Block;
+import org.jvnet.licensetool.file.FileWrapper;
 
 import java.util.List;
-import java.util.LinkedList;
-import java.util.ArrayList;
 import java.io.IOException;
 
 /**

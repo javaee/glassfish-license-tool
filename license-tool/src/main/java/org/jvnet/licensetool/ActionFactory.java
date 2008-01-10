@@ -38,6 +38,10 @@ package org.jvnet.licensetool;
 import static org.jvnet.licensetool.Tags.COPYRIGHT_BLOCK_TAG;
 import static org.jvnet.licensetool.Tags.SUN_COPYRIGHT_TAG;
 import static org.jvnet.licensetool.Tags.COMMENT_BLOCK_TAG;
+import org.jvnet.licensetool.file.Block;
+import org.jvnet.licensetool.file.PlainBlock;
+import org.jvnet.licensetool.file.CommentBlock;
+import org.jvnet.licensetool.file.ParsedFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -163,7 +167,7 @@ public class ActionFactory {
     // afterFirstBlock is true if the copyright needs to start after the first block in the
     // file.
 
-    public Scanner.Action getModifyCopyrightAction(final Block copyrightBlock1) {
+    public Scanner.Action getModifyCopyrightAction(final PlainBlock copyrightBlock1) {
         if (verbose) {
             trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock1);
         }
@@ -177,7 +181,7 @@ public class ActionFactory {
                 //FileWrapper fw = pfile.getOriginalFile();
                 //Block cb = pfile.insertCommentBlock(copyrightBlock);
                 //TODO Check Block copyrightBlock = (Block) copyrightBlock1.clone();
-                Block copyrightBlock = copyrightBlock1;
+                PlainBlock copyrightBlock = copyrightBlock1;
                 //tag blocks
                 boolean hadAnOldSunCopyright = tagBlocks(pfile);
 
@@ -262,10 +266,7 @@ public class ActionFactory {
         if (verbose) {
             trace("copyrightBlockAction: blocks in file " + pfile.getPath());
             for (Block block : pfile.getFileBlocks()) {
-                trace("\t" + block);
-                for (String str : block.contents()) {
-                    trace("\t\t" + str);
-                }
+                traceBlock(block);
             }
         }
         return hadAnOldSunCopyright;
@@ -278,11 +279,23 @@ public class ActionFactory {
     private void validationError(Block block, String msg, String fw) {
         trace("Copyright validation error: " + msg + " for " + fw);
         if ((verbose) && (block != null)) {
-            trace("Block=" + block);
-            trace("Block contents:");
-            for (String str : block.contents()) {
+            traceBlock(block);
+        }
+    }
+
+    private void traceBlock(Block block) {
+
+        trace("Block=" + block);
+        trace("Block contents:");
+        if (block instanceof PlainBlock) {
+            for (String str : ((PlainBlock) block).contents()) {
+                trace("\"" + str + "\"");
+            }
+        } else if (block instanceof CommentBlock) {
+            for (String str : ((PlainBlock) block).contents()) {
                 trace("\"" + str + "\"");
             }
         }
+
     }
 }

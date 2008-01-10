@@ -38,7 +38,9 @@ package org.jvnet.licensetool;
 import org.jvnet.licensetool.argparser.ArgParser;
 import org.jvnet.licensetool.argparser.DefaultValue;
 import org.jvnet.licensetool.argparser.Help;
-import static org.jvnet.licensetool.Tags.*;
+import org.jvnet.licensetool.file.PlainBlock;
+import org.jvnet.licensetool.file.FileParser;
+import org.jvnet.licensetool.file.FileWrapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -116,8 +118,8 @@ public class LicenseTool {
 
     private static final String START_YEAR = "StartYear";
 
-    private static Block makeCopyrightBlock(String startYear,
-                                            Block copyrightText) {
+    private static PlainBlock makeCopyrightBlock(String startYear,
+                                            PlainBlock copyrightText) {
 
         if (verbose) {
             trace("makeCopyrightBlock: startYear = " + startYear);
@@ -131,7 +133,7 @@ public class LicenseTool {
 
         Map<String, String> map = new HashMap<String, String>();
         map.put(START_YEAR, startYear);
-        Block withStart = copyrightText.instantiateTemplate(map);
+        PlainBlock withStart = copyrightText.instantiateTemplate(map);
 
         if (verbose) {
             trace("Contents of copyrightText block withStart date:");
@@ -155,8 +157,8 @@ public class LicenseTool {
         try {
             // Create the blocks needed for different forms of the
             // copyright comment template
-            final Block copyrightText = FileParser.getBlock(args.copyright());
-            Block copyrightBlock = makeCopyrightBlock(startYear, copyrightText);
+            final PlainBlock copyrightText = FileParser.getBlock(args.copyright());
+            PlainBlock copyrightBlock = makeCopyrightBlock(startYear, copyrightText);
             Scanner scanner = new Scanner(verbose, args.roots());
             for (String str : args.skipdirs())
                 scanner.addDirectoryToSkip(str);

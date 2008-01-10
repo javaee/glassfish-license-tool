@@ -39,8 +39,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.MatchingTask;
-import org.jvnet.licensetool.argparser.DefaultValue;
-import org.jvnet.licensetool.argparser.Help;
+import org.jvnet.licensetool.file.FileWrapper;
 
 import java.io.File;
 import java.util.Arrays;

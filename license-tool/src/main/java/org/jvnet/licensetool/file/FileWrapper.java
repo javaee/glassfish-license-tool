@@ -33,7 +33,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.jvnet.licensetool;
+package org.jvnet.licensetool.file;
 
 import java.io.*;
 
