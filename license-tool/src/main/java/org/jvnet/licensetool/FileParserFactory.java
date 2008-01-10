@@ -59,7 +59,7 @@ public class FileParserFactory {
                 @Override
                 public boolean insertCommentBlock(List<String> commentText) {
                     CommentBlock cb = createCommentBlock(commentText);
-                    Block fBlock = fileBlocks.getFirst();
+                    Block fBlock = fileBlocks.get(0);
                     if (fBlock.hasTag(COMMENT_BLOCK_TAG)) {
                         CommentBlock firstBlock = (CommentBlock) fBlock;
                         List<String> contents = firstBlock.contents();
@@ -80,15 +80,15 @@ public class FileParserFactory {
                             Block sheBangBlock = new LineCommentFile.LineCommentBlock(prefix, first);
                             Block restBlock = new LineCommentFile.LineCommentBlock(prefix, rest);
                             firstBlock.replace(new PlainBlock(new ArrayList<String>()));
-                            fileBlocks.addFirst(restBlock);
-                            fileBlocks.addFirst(cb);
-                            fileBlocks.addFirst(sheBangBlock);
+                            fileBlocks.add(0,restBlock);
+                            fileBlocks.add(0,cb);
+                            fileBlocks.add(0,sheBangBlock);
                         } else {
-                            fileBlocks.addFirst(cb);
+                            fileBlocks.add(0,cb);
                         }
 
                     } else {
-                        fileBlocks.addFirst(cb);
+                        fileBlocks.add(0,cb);
                     }
                     return true;
                 }
@@ -133,9 +133,9 @@ public class FileParserFactory {
                     @Override
                     public boolean insertCommentBlock(List<String> commentText) {
                         CommentBlock cb = createCommentBlock(commentText);
-                        Block firstBlock = fileBlocks.getFirst();
+                        Block firstBlock = fileBlocks.get(0);
                         if (firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
-                            fileBlocks.addFirst(cb);
+                            fileBlocks.add(0,cb);
                         } else {
                             PlainBlock plainBlock = (PlainBlock) firstBlock;
                             List<String> contents = plainBlock.contents();
@@ -148,11 +148,11 @@ public class FileParserFactory {
                                 Block xmlDeclaration = splitBlocks.first();
                                 Block restOfXml = splitBlocks.second();
                                 this.remove(plainBlock);
-                                fileBlocks.addFirst(restOfXml);
-                                fileBlocks.addFirst(cb);
-                                fileBlocks.addFirst(xmlDeclaration);
+                                fileBlocks.add(0,restOfXml);
+                                fileBlocks.add(0,cb);
+                                fileBlocks.add(0,xmlDeclaration);
                             } else {
-                                fileBlocks.addFirst(cb);
+                                fileBlocks.add(0,cb);
                             }
                         }
                         return true;
