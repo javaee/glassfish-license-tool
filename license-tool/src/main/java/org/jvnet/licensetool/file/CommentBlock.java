@@ -7,7 +7,8 @@ import java.util.*;
 import java.io.IOException;
 
 /**
- * Marker for CommentBlock
+ * Represents a comment in a file. Comment may be a single line in a file
+ * or span across multiple contiguos lines in a file.
  */
 public abstract class CommentBlock extends Block {
     protected Pair<String, String> commentStart = null;
@@ -16,6 +17,10 @@ public abstract class CommentBlock extends Block {
 
     public abstract Block replace(PlainBlock block);
 
+    /**
+     *
+     * @return returns the comment block as a list of strings 
+     */
     public List<String> contents() {
         List<String> contents = new ArrayList<String>();
         if (commentStart != null)
@@ -37,7 +42,11 @@ public abstract class CommentBlock extends Block {
         if (commentEnd != null)
             fw.writeLine(commentEnd.first()+commentEnd.second());
     }
-    
+
+    /**
+     *
+     * @return the comment content of the CommentBlock
+     */
     public List<String> comment() {
         List<String> contents = new ArrayList<String>();
         if (commentStart != null && !commentStart.second().trim().equals(""))
@@ -48,6 +57,18 @@ public abstract class CommentBlock extends Block {
         if (commentEnd != null && !commentEnd.first().trim().equals(""))
             contents.add(commentEnd.first());
         return contents;
+    }
+
+    /**
+     * Return the first string in the block that contains the search string.
+     */
+    public String find(final String search) {
+        for (String str : contents()) {
+            if (str.contains(search))
+                return str;
+        }
+
+        return null;
     }
 
     public boolean equals(Object obj) {

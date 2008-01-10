@@ -1,11 +1,13 @@
 package org.jvnet.licensetool.file;
 
 import org.jvnet.licensetool.generic.Pair;
-import org.jvnet.licensetool.file.FileWrapper;
-
 import java.util.*;
 import java.io.IOException;
 
+/**
+ * Represents a portion of file as a list of lines.
+ *
+ */
 public class PlainBlock extends Block {
 
         private List<String> data;
@@ -16,7 +18,7 @@ public class PlainBlock extends Block {
         }
 
         /**
-         * Create a new Block from a list of strings.
+         * Create a new PlainBlock from a list of strings.
          */
         public PlainBlock(final List<String> data) {
             this.data = data;

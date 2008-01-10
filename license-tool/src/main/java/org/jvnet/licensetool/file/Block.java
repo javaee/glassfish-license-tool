@@ -35,15 +35,15 @@
  */
 package org.jvnet.licensetool.file;
 
-import org.jvnet.licensetool.file.FileWrapper;
-
 import java.util.*;
 import java.io.IOException;
 
 /**
- * Represents a range of Strings, typically read from a file, that are in some sense
+ * Represents a portion, typically read from a file, that is in some sense
  * related and contiguous.  Blocks may also be tagged as an aid in transforming
  * a series of blocks.
+ *
+ * @see ParsedFile
  */
 public abstract class Block {
     protected Set<String> tags;
@@ -72,17 +72,6 @@ public abstract class Block {
         return sb.toString();
     }
 
-    
-
-    /** Create a new Block which is a copy of block.
-     */
-    /*
-    public Block( final Block block ) {
-    this.data = new ArrayList<String>( block.data ) ;
-    this.tags = new HashSet<String>( block.tags ) ;
-    }
-    */
-
 
     /**
      * Add a tag to the block.  Useful for classifying blocks.
@@ -107,26 +96,6 @@ public abstract class Block {
                 return false;
         }
         return true;
-    }
-
-    /**
-     * Get the contents of the block.
-     */
-    //TODO TODO REMOVE
-    //public abstract List<String> contents();
-
-
-    /**
-     * Return the first string in the block that contains the search string.
-     */
-    //TODO TODO REMOVE
-    public String find(final String search) {
-      /*  for (String str : contents()) {
-            if (str.contains(search))
-                return str;
-        }
-        */
-        return null;
     }
 
     /**
