@@ -36,12 +36,9 @@
 package org.jvnet.licensetool;
 
 import org.jvnet.licensetool.file.*;
-import static org.jvnet.licensetool.Tags.COMMENT_BLOCK_TAG;
 import org.jvnet.licensetool.generic.Pair;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * @author Rama Pulavarthi
@@ -55,31 +52,20 @@ public class FileParserFactory {
 
         @Override
         public ParsedFile parseFile(FileWrapper file) throws IOException {
-            return new LineCommentParsedFile(file, this) {
+            return new LineCommentParsedFile(file) {
                 @Override
-                public boolean insertCommentBlock(List<String> commentText) {
+                public void insertCommentBlock(String commentText) {
                     CommentBlock cb = createCommentBlock(commentText);
                     Block fBlock = fileBlocks.get(0);
-                    if (fBlock.hasTag(COMMENT_BLOCK_TAG)) {
-                        CommentBlock firstBlock = (CommentBlock) fBlock;
-                        List<String> contents = firstBlock.contents();
-                        String firstLine = contents.get(0);
+                    if (fBlock instanceof CommentBlock) {
+                        LineCommentFile.LineCommentBlock  firstBlock = (LineCommentFile.LineCommentBlock) fBlock;
+                        if (firstBlock.contents().startsWith("#!")) {
 
-                        if (firstLine.trim().startsWith("#!")) {
-                            List<String> blContents = firstBlock.contents();
-                            List<String> first = new ArrayList<String>();
-                            List<String> rest = new ArrayList<String>();
-                            for (String str : blContents) {
-                                if (first.size() == 0) {
-                                    first.add(str);
-                                } else {
-                                    rest.add(str);
-                                }
-                            }
-
-                            Block sheBangBlock = new LineCommentFile.LineCommentBlock(prefix, first);
-                            Block restBlock = new LineCommentFile.LineCommentBlock(prefix, rest);
-                            firstBlock.replace(new PlainBlock(new ArrayList<String>()));
+                            Pair<LineCommentFile.LineCommentBlock,LineCommentFile.LineCommentBlock> splitBlocks =
+                                    firstBlock.splitFirst();
+                            Block sheBangBlock = splitBlocks.first();
+                            Block restBlock = splitBlocks.second();
+                            remove(firstBlock);
                             fileBlocks.add(0,restBlock);
                             fileBlocks.add(0,cb);
                             fileBlocks.add(0,sheBangBlock);
@@ -90,7 +76,6 @@ public class FileParserFactory {
                     } else {
                         fileBlocks.add(0,cb);
                     }
-                    return true;
                 }
             };
         }
@@ -113,7 +98,7 @@ public class FileParserFactory {
         return new MultiLineCommentFile.MultiLineCommentFileParser(JAVA_COMMENT_START, JAVA_COMMENT_END, JAVA_COMMENT_PREFIX) {
             @Override
             public ParsedFile parseFile(final FileWrapper file) throws IOException {
-                return new BlockCommentParsedFile(file, this);
+                return new BlockCommentParsedFile(file);
             }
         };
 
@@ -129,17 +114,16 @@ public class FileParserFactory {
 
             @Override
             public ParsedFile parseFile(final FileWrapper file) throws IOException {
-                return new BlockCommentParsedFile(file, this) {
+                return new BlockCommentParsedFile(file) {
                     @Override
-                    public boolean insertCommentBlock(List<String> commentText) {
+                    public void insertCommentBlock(String commentText) {
                         CommentBlock cb = createCommentBlock(commentText);
                         Block firstBlock = fileBlocks.get(0);
-                        if (firstBlock.hasTag(COMMENT_BLOCK_TAG)) {
+                        if (firstBlock instanceof CommentBlock) {
                             fileBlocks.add(0,cb);
                         } else {
                             PlainBlock plainBlock = (PlainBlock) firstBlock;
-                            List<String> contents = plainBlock.contents();
-                            String firstLine = contents.get(0);
+                            String firstLine = plainBlock.contents();
                             if (firstLine.trim().startsWith("<?xml")) {
                                 if (!firstLine.trim().endsWith("?>")) {
                                     throw new RuntimeException("Needs special handling");
@@ -147,15 +131,14 @@ public class FileParserFactory {
                                 Pair<Block, Block> splitBlocks = plainBlock.splitFirst();
                                 Block xmlDeclaration = splitBlocks.first();
                                 Block restOfXml = splitBlocks.second();
-                                this.remove(plainBlock);
+                                remove(plainBlock);
                                 fileBlocks.add(0,restOfXml);
                                 fileBlocks.add(0,cb);
                                 fileBlocks.add(0,xmlDeclaration);
                             } else {
                                 fileBlocks.add(0,cb);
                             }
-                        }
-                        return true;
+                        }                        
                     }
                 };
             }

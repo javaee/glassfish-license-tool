@@ -41,7 +41,7 @@ package org.jvnet.licensetool;
  */
 public class Tags {
      // Block tags
-    public static final String COMMENT_BLOCK_TAG = "CommentBlock";    
+    //public static final String COMMENT_BLOCK_TAG = "CommentBlock";    
     public static final String COPYRIGHT_BLOCK_TAG = "CopyrightBlock";
     public static final String SUN_COPYRIGHT_TAG = "SunCopyright";
     public static final String CORRECT_COPYRIGHT_TAG = "CorrectCopyright";

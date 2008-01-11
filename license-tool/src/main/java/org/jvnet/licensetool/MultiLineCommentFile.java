@@ -37,11 +37,10 @@ package org.jvnet.licensetool;
 
 import org.jvnet.licensetool.file.*;
 import org.jvnet.licensetool.generic.Pair;
-import org.jvnet.licensetool.generic.BinaryFunction;
-import static org.jvnet.licensetool.Tags.COMMENT_BLOCK_TAG;
-
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 import java.io.IOException;
 
 /**
@@ -49,47 +48,74 @@ import java.io.IOException;
  */
 public class MultiLineCommentFile {
     public static class MultiLineCommentBlock extends CommentBlock {
-        String prefix;
-        String start;
-        String end;
+        protected Pair<String, String> commentStart = null;
+        protected List<Pair<String, String>> commentLines = new ArrayList<Pair<String, String>>();
+        protected Pair<String, String> commentEnd = null;
 
-        public MultiLineCommentBlock(String start, String end, String prefix, final List<String> data) {
+        final String prefix;
+        final String start;
+        final String end;
+
+        public MultiLineCommentBlock(String start, String end, String prefix, final String multiLineComment, Set<String> tags) {
+            super(tags);
             this.start = start;
             this.end = end;
             this.prefix = prefix;
-            parse(data);
+            parse(multiLineComment);
         }
-        /*
-        public BlockComment(String start, String end, String prefix, final Block dataBlock) {
-            super(dataBlock);
+
+        private MultiLineCommentBlock(String start, String end, String prefix, List<String> multiLineComment, Set<String> tags) {
+            super(tags);
             this.start = start;
             this.end = end;
             this.prefix = prefix;
-            parse(dataBlock.contents());
+            parse(multiLineComment);
         }
-        */
 
         public static CommentBlock createCommentBlock(String start, String end, String prefix,
-                                                      final List<String> commentText) {
+                                                      final String commentText) {
             final List<String> commentTextBlock = new ArrayList<String>();
-            for (String str : commentText) {
-	            commentTextBlock.add( prefix + str ) ;
-	        }
-	        commentTextBlock.add(0,start);
-            commentTextBlock.add(commentTextBlock.size(), end);
-            return new MultiLineCommentBlock(start, end, prefix, commentTextBlock);
+            List<String> dataAsLines = FileWrapper.splitToLines(commentText);
+            for (String str : dataAsLines) {
+                commentTextBlock.add(prefix + str);
+            }
+            commentTextBlock.add(0, start + "\n");
+            commentTextBlock.add(commentTextBlock.size(), end + "\n");
+            return  new MultiLineCommentBlock(start, end, prefix, commentTextBlock, new HashSet<String>());
         }
 
-        public Block replace(PlainBlock block) {
+        public Block replace(String content) {
             commentStart = new Pair<String, String>(commentStart.first(), "");
             commentLines.clear();
-            for (String str : block.contents()) {
+            List<String> parsedData = FileWrapper.splitToLines(content);
+            for (String str : parsedData) {
                 commentLines.add(new Pair<String, String>(prefix, str));
             }
             commentEnd = new Pair<String, String>("", commentEnd.second());
-
-            // update the block content-view
             return this;
+        }
+
+        public String contents() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(commentStart.first());
+            sb.append(commentStart.second());
+            for(Pair<String,String> line: commentLines) {
+                sb.append(line.first());
+                sb.append(line.second());
+            }
+            sb.append(commentEnd.first());
+            sb.append(commentEnd.second());
+            return sb.toString();
+        }
+
+        public String comment() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(commentStart.second());
+            for(Pair<String,String> line: commentLines) {
+                sb.append(line.second());
+            }
+            sb.append(commentEnd.first());            
+            return sb.toString();
         }
 
         private void parse(List<String> data) {
@@ -108,14 +134,12 @@ public class MultiLineCommentFile {
                         String startCommentSuffix;
                         String rest = str.substring(index + start.length());
                         int endindex = rest.indexOf(end);
-                        //TODO TODO single line comment fix later
-//                        if (endindex >= 0) {
-//                            startCommentSuffix = rest.substring(0, endindex);
-//                            String endCommentSuffix = rest.substring(endindex);
-//                            commentEnd = new Pair<String, String>("", endCommentSuffix);
-//                        } else {
+                        if (endindex >= 0) {
+                            startCommentSuffix = rest.substring(0, endindex);
+                            commentEnd = new Pair<String, String>("", rest.substring(endindex));
+                        } else {
                             startCommentSuffix = rest;
-//                        }
+                        }
                         commentStart = new Pair<String, String>(startCommmentPrefix, startCommentSuffix);
                     }
                 } else if (i == (data.size() - 1)) {
@@ -126,79 +150,80 @@ public class MultiLineCommentFile {
 //                        commentEnd = new Pair<String,String>(endCommmentPrefix,endCommentSuffix);
                         throw new RuntimeException("Cooment block does n't contain end marker " + end);
                     } else {
-                        String endCommmentPrefix = str.substring(0, index);
-                        String endCommentSuffix = str.substring(index);
-                        commentEnd = new Pair<String, String>(endCommmentPrefix, endCommentSuffix);
+                        commentEnd = new Pair<String, String>(str.substring(0, index),
+                                str.substring(index));
                     }
                 } else {
                     int index = str.indexOf(prefix);
                     if (index < 0) {
-                        String commmentPrefix = "";
-                        String commentSuffix = str;
-                        commentLines.add(new Pair<String, String>(commmentPrefix, commentSuffix));
+                        commentLines.add(new Pair<String, String>("", str));
 
                     } else {
-                        String commmentPrefix = str.substring(0, index + prefix.length());
-                        String commentSuffix = str.substring(index + prefix.length());
-                        commentLines.add(new Pair<String, String>(commmentPrefix, commentSuffix));
+                        commentLines.add(new Pair<String, String>(str.substring(0, index + prefix.length()),
+                                str.substring(index + prefix.length())));
                     }
                 }
             }
+        }
+
+        private void parse(String data) {
+            List<String> dataAsLines = FileWrapper.splitToLines(data);
+            parse(dataAsLines);
         }
     }
 
     public static class MultiLineCommentFileParser extends FileParser {
-            final String start;
-            final String end;
-            final String prefix;
-            public MultiLineCommentFileParser(String start, String end, String prefix) {
-                this.start = start;
-                this.end = end;
-                this.prefix = prefix;
+        final String start;
+        final String end;
+        final String prefix;
+
+        public MultiLineCommentFileParser(String start, String end, String prefix) {
+            this.start = start;
+            this.end = end;
+            this.prefix = prefix;
+        }
+
+        public class BlockCommentParsedFile extends ParsedFile {
+            protected List<Block> fileBlocks = null;
+
+            protected BlockCommentParsedFile(FileWrapper originalFile) throws IOException {
+                super(originalFile);
+                fileBlocks = new ArrayList(parseBlocks(originalFile));
             }
 
-            public class BlockCommentParsedFile extends ParsedFile {
-                protected List<Block> fileBlocks = null;
-
-                protected BlockCommentParsedFile(FileWrapper originalFile, FileParser parser) throws IOException {
-                    super(originalFile);
-                    fileBlocks = new ArrayList(parseBlocks(originalFile));
+            public List<Block> getFileBlocks() {
+                List<Block> blocks = new ArrayList<Block>();
+                for (Block b : fileBlocks) {
+                    blocks.add(b);
                 }
-
-                public List<Block> getFileBlocks() {
-                    List<Block> blocks = new ArrayList<Block>();
-                    for (Block b : fileBlocks) {
-                        blocks.add(b);
-                    }
-                    return blocks;
-                }
-
-                public boolean insertCommentBlock(List<String> commentText) {
-                    CommentBlock cb = createCommentBlock(commentText);
-                    fileBlocks.add(0,cb);
-                    return true;
-                }
-
-                public boolean remove(Block cb) {
-                    //TODO  take care of comments which have non-comment text before and after the comment.
-                    return fileBlocks.remove(cb);
-                }
-
-                protected CommentBlock createCommentBlock(List<String> commentText) {
-                    return MultiLineCommentBlock.createCommentBlock(start, end, prefix, commentText);
-                }
+                return blocks;
             }
 
-            @Override
-            public ParsedFile parseFile(final FileWrapper file) throws IOException {
-                return new BlockCommentParsedFile(file,this);
-
+            public void insertCommentBlock(String commentText) {
+                CommentBlock cb = createCommentBlock(commentText);
+                fileBlocks.add(0, cb);                
             }
 
-            private List<Block> parseBlocks(FileWrapper file) throws IOException{
-                return MultiLineCommentFile.parseBlocks(file, start, end, prefix);
+            public void remove(Block cb) {
+                fileBlocks.remove(cb);
+            }
+
+            protected CommentBlock createCommentBlock(String commentText) {
+                return MultiLineCommentBlock.createCommentBlock(start, end, prefix, commentText);
             }
         }
+
+        @Override
+        public ParsedFile parseFile(final FileWrapper file) throws IOException {
+            return new BlockCommentParsedFile(file);
+
+        }
+
+        private List<Block> parseBlocks(FileWrapper file) throws IOException {
+            return MultiLineCommentFile.parseBlocks(file, start, end, prefix);
+        }
+    }
+
     /**
      * Transform fw into a list of blocks.  There are two types of blocks in this
      * list, and they always alternate:
@@ -212,66 +237,52 @@ public class MultiLineCommentFile {
     public static List<Block> parseBlocks(final FileWrapper fw,
                                           final String start, final String end, final String prefix) throws IOException {
 
-        boolean inComment = false;
-        final List<Block> result = new ArrayList<Block>();
         fw.open(FileWrapper.OpenMode.READ);
 
         try {
-            List<String> data = new ArrayList<String>();
+            String fileContents = fw.readAsString();
 
-            BinaryFunction<List<String>, String, List<String>> newBlock =
-                    new BinaryFunction<List<String>, String, List<String>>() {
-                        public List<String> evaluate(List<String> data, String tag) {
-                            if (data.size() == 0)
-                                return data;
-                            final Block bl;
-                            if(tag != null && tag.equals(COMMENT_BLOCK_TAG)) {
-                                bl = new MultiLineCommentFile.MultiLineCommentBlock(start, end, prefix, data);
-                                bl.addTag(tag);
-                            } else {
-                                bl = new PlainBlock(data);
-                            }
-                            result.add(bl);
-                            return new ArrayList<String>();
-                        }
-                    };
+            int commentStart;
+            int commentEnd;
+            int curIndex = 0;
+            List<Block> parsedBlocks = new ArrayList<Block>();
+            String commentString;
+            String plainString;
 
-            String line = fw.readLine();
-            while (line != null) {
-                if (inComment) {
-                    data.add(line);
-
-                    if (line.contains(end)) {
-                        inComment = false;
-                        data = newBlock.evaluate(data, COMMENT_BLOCK_TAG);
+            while (true) {
+                commentStart = fileContents.indexOf(start, curIndex);
+                if (commentStart != -1) {
+                    if (commentStart != curIndex) {
+                        //capture until the start of the comment
+                        plainString = fileContents.substring(curIndex, commentStart);
+                        parsedBlocks.add(new PlainBlock(plainString));
                     }
+                    curIndex = commentStart;
+                    commentEnd = fileContents.indexOf(end, commentStart + start.length());
+                    if (commentEnd != -1) {
+                        commentString = fileContents.substring(commentStart, commentEnd + end.length());
+                        parsedBlocks.add(new MultiLineCommentBlock(start, end, prefix, commentString, new HashSet<String>()));
+                        curIndex = commentEnd + end.length();
+                    } else {
+                        // no end comment, though unusual
+                        plainString = fileContents.substring(curIndex);
+                        parsedBlocks.add(new PlainBlock(plainString));
+                        break;
+                    }
+                } else if (curIndex == fileContents.length()) {
+                    //reached end of file;
+                    break;
                 } else {
-                    if (line.contains(start)) {
-                        inComment = true;
-                        data = newBlock.evaluate(data, null);
-                    }
-
-                    data.add(line);
-
-                    if (line.contains(end)) {
-                        // Comment was a single line!
-                        inComment = false;
-                        data = newBlock.evaluate(data, COMMENT_BLOCK_TAG);
-                    }
+                    //no comment further
+                    plainString = fileContents.substring(curIndex);
+                    parsedBlocks.add(new PlainBlock(plainString));
+                    break;
                 }
-                line = fw.readLine();
             }
-
-            // Create last block!
-            Block bl = new PlainBlock(data);
-            if (inComment)
-                bl.addTag(COMMENT_BLOCK_TAG);
-            result.add(bl);
-
-            return result;
+            return parsedBlocks;
         } finally {
-           fw.close();
+            fw.close();
         }
-    }
 
+    }
 }

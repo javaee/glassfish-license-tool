@@ -54,7 +54,7 @@ import java.util.Arrays;
 public class Scanner {
     private final List<File> roots;
     private final boolean verbose;
-    private List<String> patternsToSkip;
+    private final List<String> patternsToSkip;
 
     public Scanner(boolean verbose, final List<File> files) {
         this.roots = files;

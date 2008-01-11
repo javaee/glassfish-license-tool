@@ -35,8 +35,6 @@
  */
 package org.jvnet.licensetool.file;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.io.IOException;
 
 /**
@@ -45,26 +43,5 @@ import java.io.IOException;
 public abstract class FileParser {
 
     public abstract ParsedFile parseFile(FileWrapper file) throws IOException;
-
-    /**
-     * Return the contents of the text file as a Block.
-     */
-    public static PlainBlock getBlock(final FileWrapper fw) throws IOException {
-        fw.open(FileWrapper.OpenMode.READ);
-
-        try {
-            final List<String> data = new ArrayList<String>();
-
-            String line = fw.readLine();
-            while (line != null) {
-                data.add(line);
-                line = fw.readLine();
-            }
-
-            return new PlainBlock(data);
-        } finally {
-            fw.close();
-        }
-    }
 
 }

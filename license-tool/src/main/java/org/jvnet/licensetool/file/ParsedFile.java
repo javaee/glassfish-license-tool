@@ -35,9 +35,6 @@
  */
 package org.jvnet.licensetool.file;
 
-import org.jvnet.licensetool.file.Block;
-import org.jvnet.licensetool.file.FileWrapper;
-
 import java.util.List;
 import java.io.IOException;
 
@@ -45,16 +42,16 @@ import java.io.IOException;
  * Represents a parsed file.
  */
 public abstract class ParsedFile {
-    final FileWrapper originalFile;
-    protected ParsedFile(FileWrapper originalFile) throws IOException{
+    private final FileWrapper originalFile;
+    protected ParsedFile(FileWrapper originalFile) {
         this.originalFile = originalFile;
     }
 
     public abstract List<Block> getFileBlocks();
     
-    public abstract boolean insertCommentBlock(List<String> cb);
+    public abstract void insertCommentBlock(String cb);
 
-    public abstract boolean remove(Block cb);
+    public abstract void remove(Block cb);
     
     /**
      * This is similar to writing back to the original file that got parsed.

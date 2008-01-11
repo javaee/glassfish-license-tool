@@ -46,18 +46,19 @@ import java.io.IOException;
  * @see ParsedFile
  */
 public abstract class Block {
-    protected Set<String> tags;
+    protected final Set<String> tags;
 
-    public Block(Set<String> tags) {
+    Block(Set<String> tags) {
         this.tags = tags;
     }
 
-    public Block() {
+    Block() {
         this.tags = new HashSet<String>();
     }
+
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("Block[");
+        sb.append(this.getClass().getName()).append("[");
         boolean first = true;
         for (String tag : tags) {
             if (first) {
@@ -103,7 +104,4 @@ public abstract class Block {
      */
 
     public abstract void write(final FileWrapper fw) throws IOException;
-
-
-
 }

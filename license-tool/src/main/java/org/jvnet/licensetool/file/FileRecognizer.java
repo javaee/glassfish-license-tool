@@ -35,9 +35,6 @@
  */
 package org.jvnet.licensetool.file;
 
-import org.jvnet.licensetool.file.FileParser;
-import org.jvnet.licensetool.file.FileWrapper;
-
 /**
  * Recognizes files according to patterns, and gives a suitable parser.
  */

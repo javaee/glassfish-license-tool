@@ -37,7 +37,7 @@ package org.jvnet.licensetool;
 
 import static org.jvnet.licensetool.Tags.COPYRIGHT_BLOCK_TAG;
 import static org.jvnet.licensetool.Tags.SUN_COPYRIGHT_TAG;
-import static org.jvnet.licensetool.Tags.COMMENT_BLOCK_TAG;
+import static org.jvnet.licensetool.file.CommentBlock.COMMENT_BLOCK_TAG;
 import org.jvnet.licensetool.file.Block;
 import org.jvnet.licensetool.file.PlainBlock;
 import org.jvnet.licensetool.file.CommentBlock;
@@ -45,7 +45,6 @@ import org.jvnet.licensetool.file.ParsedFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.ArrayList;
 
 public class ActionFactory {
     private final boolean verbose;
@@ -203,7 +202,7 @@ public class ActionFactory {
                             COMMENT_BLOCK_TAG) && firstMatch) {
                         firstMatch = false;
                         if (hadAnOldSunCopyright) {
-                            ((CommentBlock)block).replace(copyrightBlock);
+                            ((CommentBlock)block).replace(copyrightBlock.contents());
                         }
                     } else {
                         //
@@ -228,11 +227,6 @@ public class ActionFactory {
 
         return new Scanner.Action() {
             public boolean evaluate(ParsedFile pfile) {
-                List<Block> fileBlocks = pfile.getFileBlocks();
-                List<Block> newFileBlocks =  new ArrayList<Block>();
-                for (Block block : fileBlocks) {
-                        newFileBlocks.add(block);
-                }
                 try {
                     pfile.write();
                 } catch (IOException exc) {
@@ -291,13 +285,9 @@ public class ActionFactory {
         trace("Block=" + block);
         trace("Block contents:");
         if (block instanceof PlainBlock) {
-            for (String str : ((PlainBlock) block).contents()) {
-                trace("\"" + str + "\"");
-            }
+            trace("\"" + ((PlainBlock) block).contents() + "\"");
         } else if (block instanceof CommentBlock) {
-            for (String str : ((PlainBlock) block).contents()) {
-                trace("\"" + str + "\"");
-            }
+            trace("\"" + ((PlainBlock) block).contents() + "\"");
         }
 
     }

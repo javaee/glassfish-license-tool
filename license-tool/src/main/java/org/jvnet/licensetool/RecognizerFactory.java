@@ -169,8 +169,8 @@ public class RecognizerFactory {
     }
 
     public static class CompositeRecognizer implements FileRecognizer{
-        Map<String, FileRecognizer> suffixRecognizers = new HashMap<String, FileRecognizer>();
-        List<FileRecognizer> contentRecognizers = new ArrayList<FileRecognizer>();
+        final Map<String, FileRecognizer> suffixRecognizers = new HashMap<String, FileRecognizer>();
+        final List<FileRecognizer> contentRecognizers = new ArrayList<FileRecognizer>();
 
         public FileParser getParser(FileWrapper file) {
             FileRecognizer recognizer = suffixRecognizers.get(file.getSuffix());

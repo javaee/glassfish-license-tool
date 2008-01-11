@@ -39,7 +39,6 @@ import org.jvnet.licensetool.argparser.ArgParser;
 import org.jvnet.licensetool.argparser.DefaultValue;
 import org.jvnet.licensetool.argparser.Help;
 import org.jvnet.licensetool.file.PlainBlock;
-import org.jvnet.licensetool.file.FileParser;
 import org.jvnet.licensetool.file.FileWrapper;
 
 import java.io.File;
@@ -126,9 +125,8 @@ public class LicenseTool {
             trace("makeCopyrightBlock: copyrightText = " + copyrightText);
 
             trace("Contents of copyrightText block:");
-            for (String str : copyrightText.contents()) {
-                trace("\t" + str);
-            }
+            trace(copyrightText.contents());
+
         }
 
         Map<String, String> map = new HashMap<String, String>();
@@ -137,9 +135,7 @@ public class LicenseTool {
 
         if (verbose) {
             trace("Contents of copyrightText block withStart date:");
-            for (String str : withStart.contents()) {
-                trace("\t" + str);
-            }
+            trace(withStart.contents());
         }
 
         return withStart;
@@ -157,7 +153,7 @@ public class LicenseTool {
         try {
             // Create the blocks needed for different forms of the
             // copyright comment template
-            final PlainBlock copyrightText = FileParser.getBlock(args.copyright());
+            final PlainBlock copyrightText = new PlainBlock(args.copyright());
             PlainBlock copyrightBlock = makeCopyrightBlock(startYear, copyrightText);
             Scanner scanner = new Scanner(verbose, args.roots());
             for (String str : args.skipdirs())
@@ -167,8 +163,8 @@ public class LicenseTool {
             if(validate) {
                 action = new ActionFactory(verbose).getValidateCopyrightAction(copyrightBlock);
             } else {
-                action = new ActionFactory(verbose).getModifyCopyrightAction(copyrightBlock);
-                //action = new ActionFactory(verbose).getReWriteCopyrightAction();
+                //action = new ActionFactory(verbose).getModifyCopyrightAction(copyrightBlock);
+                action = new ActionFactory(verbose).getReWriteCopyrightAction();
             }
             // Finally, we process all files
             scanner.scan(new RecognizerFactory().getDefaultRecognizer(), action);
