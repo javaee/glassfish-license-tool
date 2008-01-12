@@ -39,6 +39,7 @@ import org.jvnet.licensetool.file.*;
 import org.jvnet.licensetool.generic.Pair;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Rama Pulavarthi
@@ -139,6 +140,32 @@ public class FileParserFactory {
                                 fileBlocks.add(0,cb);
                             }
                         }                        
+                    }
+                    @Override
+                    protected void postParse() {
+                        //TODO TODO
+                        Block b = fileBlocks.get(0);
+                        if(b instanceof CommentBlock)
+                            b.addTag(CommentBlock.TOP_COMMENT_BLOCK);
+                        else if(b instanceof PlainBlock) {
+                            List<String> content = FileWrapper.splitToLines(((PlainBlock)b).contents());
+                            String firstLine =content.get(0);
+                            if(firstLine.trim().startsWith("<?xml") && firstLine.trim().endsWith("?>")) {
+                                if(content.size() > 1) {
+                                    for(int i=1; i<=content.size();i++) {
+                                        // after first line, there is non-empty content
+                                        if(!(content.get(i).trim().equals("")))
+                                            return;
+                                    }
+                                }
+                                b = fileBlocks.get(1);
+                                if(b instanceof CommentBlock) {
+                                    b.addTag(CommentBlock.TOP_COMMENT_BLOCK);
+                                }
+                            }
+
+                        }
+                        super.postParse();
                     }
                 };
             }

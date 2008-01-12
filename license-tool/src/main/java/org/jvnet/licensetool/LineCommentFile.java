@@ -144,11 +144,26 @@ public class LineCommentFile {
         public class LineCommentParsedFile extends ParsedFile {
             protected List<Block> fileBlocks = null;
 
+            /**
+             * calls postParse() after the file is parsed in to blocks.
+             * @param originalFile
+             * @throws IOException
+             */
             protected LineCommentParsedFile(FileWrapper originalFile) throws IOException {
                 super(originalFile);
                 fileBlocks = new ArrayList(parseBlocks(originalFile));
             }
 
+            /**
+             * Sub classes should override based on the first possible
+             * position of the CommentBlock in the file.
+             */
+            protected void postParse() {
+                if (fileBlocks.get(0) instanceof CommentBlock) {
+                    fileBlocks.get(0).addTag(CommentBlock.TOP_COMMENT_BLOCK);
+                }
+            }
+            
             public List<Block> getFileBlocks() {
                 List<Block> blocks = new ArrayList<Block>();
                 for (Block b : fileBlocks) {

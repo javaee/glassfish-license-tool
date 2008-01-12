@@ -186,9 +186,25 @@ public class MultiLineCommentFile {
         public class BlockCommentParsedFile extends ParsedFile {
             protected List<Block> fileBlocks = null;
 
+            /**
+             * calls postParse() after the file is parsed in to blocks.
+             * @param originalFile
+             * @throws IOException
+             */
             protected BlockCommentParsedFile(FileWrapper originalFile) throws IOException {
                 super(originalFile);
                 fileBlocks = new ArrayList(parseBlocks(originalFile));
+                postParse();
+            }
+
+            /**
+             * Sub classes should override based on the first possible
+             * position of the CommentBlock in the file.
+             */
+            protected void postParse() {
+                if (fileBlocks.get(0) instanceof CommentBlock) {
+                    fileBlocks.get(0).addTag(CommentBlock.TOP_COMMENT_BLOCK);
+                }
             }
 
             public List<Block> getFileBlocks() {
@@ -211,6 +227,7 @@ public class MultiLineCommentFile {
             protected CommentBlock createCommentBlock(String commentText) {
                 return MultiLineCommentBlock.createCommentBlock(start, end, prefix, commentText);
             }
+
         }
 
         @Override
