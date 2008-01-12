@@ -146,7 +146,8 @@ public class FileParserFactory {
                             fileBlocks.add(0,cb);
                         } else {
                             PlainBlock plainBlock = (PlainBlock) firstBlock;
-                            String firstLine = plainBlock.contents();
+                            List<String> lines = FileWrapper.splitToLines(plainBlock.contents());
+                            String firstLine = lines.get(0);
                             if (firstLine.trim().startsWith("<?xml")) {
                                 if (!firstLine.trim().endsWith("?>")) {
                                     throw new RuntimeException("Needs special handling");
