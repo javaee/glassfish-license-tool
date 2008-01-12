@@ -147,49 +147,49 @@ public class ActionFactory {
     // afterFirstBlock is true if the copyright needs to start after the first block in the
     // file.
 
-    public Scanner.Action getModifyCopyrightAction(final PlainBlock copyrightBlock1) {
+    public Scanner.Action getModifyCopyrightAction(final PlainBlock copyrightBlock) {
         if (verbose) {
-            trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock1);
+            trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock);
         }
 
         return new Scanner.Action() {
             public String toString() {
-                return "CopyrightBlockAction[copyrightText=" + copyrightBlock1 + "]";
+                return "CopyrightBlockAction[copyrightText=" + copyrightBlock + "]";
             }
 
             public boolean evaluate(ParsedFile pfile) {
-                //FileWrapper fw = pfile.getOriginalFile();
-                //Block cb = pfile.insertCommentBlock(copyrightBlock);
-                //TODO Check Block copyrightBlock = (Block) copyrightBlock1.clone();
-                PlainBlock copyrightBlock = copyrightBlock1;
                 //tag blocks
                 boolean hadAnOldSunCopyright = tagBlocks(pfile);
-
-                // Re-write file, replacing the first block tagged
-                // SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG, and commentBlock with
-                // the copyrightText block.
-
                 trace("Updating copyright/license header on file " + pfile.getPath());
-
-                boolean firstMatch = true;
-                boolean firstBlock = true;
-                List<Block> fileBlocks = pfile.getFileBlocks();
-                //List<Block> newFileBlocks =  new ArrayList<Block>();
-                for (Block block : fileBlocks) {
-                    if (!hadAnOldSunCopyright && firstBlock) {
-                        pfile.insertCommentBlock(copyrightBlock.contents());
-                        firstBlock = false;
-                    } else if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG,
-                            COMMENT_BLOCK_TAG) && firstMatch) {
-                        firstMatch = false;
-                        if (hadAnOldSunCopyright) {
-                            ((CommentBlock)block).replace(copyrightBlock.contents());
+                if(!hadAnOldSunCopyright) {
+                    trace("Insert: No Sun Copyright header in " + pfile.getPath());
+                    pfile.insertCommentBlock(copyrightBlock.contents());
+                }
+                int countSunCopyright = 0;
+                for (Block block : pfile.getFileBlocks()) {
+                    if (block instanceof CommentBlock) {
+                        if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG)) {
+                            countSunCopyright++;
+                            if (countSunCopyright > 1) {
+                                trace("Remove: More than one Sun Copyright Block "+ pfile.getPath());
+                                pfile.remove(block);
+                                continue;
+                            }
+                            if (block.hasTag(CommentBlock.TOP_COMMENT_BLOCK)) {
+                                if (!(copyrightBlock.contents().equals(((CommentBlock) block).contents()))) {
+                                    // It should entirely match copyrightText
+                                    trace("Replace: First block has incorrect copyright text "+ pfile.getPath());
+                                    pfile.remove(block);
+                                    pfile.insertCommentBlock(copyrightBlock.contents());
+                                }
+                            } else {
+                                trace("Move: Sun Copyright Block is not the first comment block"+ pfile.getPath());
+                                pfile.remove(block);
+                                pfile.insertCommentBlock(copyrightBlock.contents());
+                            }
                         }
-                    } else {
-                        //
                     }
                 }
-                //pfile.setFileBlocks(newFileBlocks);
                 try {
                     pfile.write();
                 } catch (IOException exc) {

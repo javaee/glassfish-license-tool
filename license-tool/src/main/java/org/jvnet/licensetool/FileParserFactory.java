@@ -57,6 +57,7 @@ public class FileParserFactory {
                 @Override
                 public void insertCommentBlock(String commentText) {
                     CommentBlock cb = createCommentBlock(commentText);
+                    cb.addTag(CommentBlock.TOP_COMMENT_BLOCK);
                     Block fBlock = fileBlocks.get(0);
                     if (fBlock instanceof CommentBlock) {
                         LineCommentFile.LineCommentBlock  firstBlock = (LineCommentFile.LineCommentBlock) fBlock;
@@ -78,6 +79,8 @@ public class FileParserFactory {
                         fileBlocks.add(0,cb);
                     }
                 }
+
+                
             };
         }
     }
@@ -119,6 +122,7 @@ public class FileParserFactory {
                     @Override
                     public void insertCommentBlock(String commentText) {
                         CommentBlock cb = createCommentBlock(commentText);
+                        cb.addTag(CommentBlock.TOP_COMMENT_BLOCK);
                         Block firstBlock = fileBlocks.get(0);
                         if (firstBlock instanceof CommentBlock) {
                             fileBlocks.add(0,cb);

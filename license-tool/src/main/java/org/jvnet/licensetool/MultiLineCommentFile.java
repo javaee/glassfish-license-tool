@@ -217,6 +217,7 @@ public class MultiLineCommentFile {
 
             public void insertCommentBlock(String commentText) {
                 CommentBlock cb = createCommentBlock(commentText);
+                cb.addTag(CommentBlock.TOP_COMMENT_BLOCK);
                 fileBlocks.add(0, cb);                
             }
 
