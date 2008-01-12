@@ -64,7 +64,7 @@ public class MultiLineCommentFile {
             parse(multiLineComment);
         }
 
-        private MultiLineCommentBlock(String start, String end, String prefix, List<String> multiLineComment, Set<String> tags) {
+        public MultiLineCommentBlock(String start, String end, String prefix, List<String> multiLineComment, Set<String> tags) {
             super(tags);
             this.start = start;
             this.end = end;

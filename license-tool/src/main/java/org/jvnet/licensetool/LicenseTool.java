@@ -163,8 +163,8 @@ public class LicenseTool {
             if(validate) {
                 action = new ActionFactory(verbose).getValidateCopyrightAction(copyrightBlock);
             } else {
-                //action = new ActionFactory(verbose).getModifyCopyrightAction(copyrightBlock);
-                action = new ActionFactory(verbose).getReWriteCopyrightAction();
+                action = new ActionFactory(verbose).getModifyCopyrightAction(copyrightBlock);
+                //action = new ActionFactory(verbose).getReWriteCopyrightAction();
             }
             // Finally, we process all files
             scanner.scan(new RecognizerFactory().getDefaultRecognizer(), action);

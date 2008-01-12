@@ -40,6 +40,9 @@ import org.jvnet.licensetool.generic.Pair;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * @author Rama Pulavarthi
@@ -102,10 +105,25 @@ public class FileParserFactory {
         return new MultiLineCommentFile.MultiLineCommentFileParser(JAVA_COMMENT_START, JAVA_COMMENT_END, JAVA_COMMENT_PREFIX) {
             @Override
             public ParsedFile parseFile(final FileWrapper file) throws IOException {
-                return new BlockCommentParsedFile(file);
+                return new BlockCommentParsedFile(file) {
+
+                    @Override //Hack to put " " before end prefix "*/"
+                    protected CommentBlock createCommentBlock(String commentText) {
+
+                        final List<String> commentTextBlock = new ArrayList<String>();
+                        List<String> dataAsLines = FileWrapper.splitToLines(commentText);
+                        for (String str : dataAsLines) {
+                            commentTextBlock.add(prefix + str);
+                        }
+                        commentTextBlock.add(0, start + "\n");
+                        //Hack to put " " before end prefix "*/"
+                        commentTextBlock.add(commentTextBlock.size(), " "+end + "\n");
+
+                        return new MultiLineCommentFile.MultiLineCommentBlock(start, end, prefix, commentTextBlock, new HashSet<String>());
+                    }
+                };
             }
         };
-
     }
 
     public static FileParser createXMLFileParser() {
