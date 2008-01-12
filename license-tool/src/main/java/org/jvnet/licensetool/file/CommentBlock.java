@@ -20,7 +20,7 @@ public abstract class CommentBlock extends Block {
     // In a XMl file,
     // the first CommentBlock should occur after XML declaration (<?xml version="1.0"?>) if it exists,
     // otherwise in the beginning of the file.  
-    public static final String TOP_COMMENT_BLOCK = "TopCommentBloack";
+    public static final String TOP_COMMENT_BLOCK = "TopCommentBlock";
 
     public CommentBlock(Set<String> tags) {
         super(tags);

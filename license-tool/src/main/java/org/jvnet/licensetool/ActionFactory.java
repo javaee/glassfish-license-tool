@@ -96,63 +96,44 @@ public class ActionFactory {
         };
     }
 
-    public Scanner.Action getValidateCopyrightAction(final Block copyrightBlock1) {
+    public Scanner.Action getValidateCopyrightAction(final PlainBlock copyrightBlock) {
         if (verbose) {
-            trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock1);
+            trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock);
         }
 
         return new Scanner.Action() {
             public String toString() {
-                return "CopyrightBlockAction[copyrightText=" + copyrightBlock1 + "]";
+                return "CopyrightBlockAction[copyrightText=" + copyrightBlock + "]";
             }
 
+            // Generally always return true, because we want to see ALL validation errors.
             public boolean evaluate(ParsedFile pfile) {
-               /*
-                //Block cb = pfile.createCommentBlock(copyrightBlock);
-                Block copyrightBlock = (Block) copyrightBlock1.clone();
                 //tag blocks
                 boolean hadAnOldSunCopyright = tagBlocks(pfile);
-
-                // There should be a Sun copyright block in the first block
-                // (if afterFirstBlock is false), otherwise in the second block.
-                // It should entirely match copyrightText
-                int count = 0;
-                for (Block block : pfile.getFileBlocks()) {
-
-                    // Generally always return true, because we want to see ALL validation errors.
-                    if (!pfile.commentAfterFirstBlock() && (count == 0)) {
-                        if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG,
-                                COMMENT_BLOCK_TAG)) {
-                            if (!copyrightBlock.equals(new Block(block.contents()))) {
-                                validationError(block, "First block has incorrect copyright text", pfile.toString());
-                            }
-                        } else {
-                            validationError(block, "First block should be copyright but isn't", pfile.toString());
-                        }
-
-                        return true;
-                    } else if (pfile.commentAfterFirstBlock() && (count == 1)) {
-                        if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG, COMMENT_BLOCK_TAG)) {
-                            if (!copyrightBlock.equals(new Block(block.contents()))) {
-                                validationError(block, "Second block has incorrect copyright text", pfile.toString());
-                            }
-                        } else {
-                            validationError(block, "Second block should be copyright but isn't", pfile.toString());
-                        }
-                        return true;
-                    }
-
-                    if (count > 1) {
-                        // should not get here!  Return false only in this case, because this is
-                        // an internal error in the validator.
-                        validationError(null, "Neither first nor second block checked", pfile.toString());
-                        return false;
-                    }
-
-                    count++;
-
+                if(!hadAnOldSunCopyright) {
+                    validationError(null,"No Sun Copyright header in ", pfile.getPath());
                 }
-                */
+                // There should be a Sun copyright block in the first block
+                int countSunCopyright = 0;
+                for (Block block : pfile.getFileBlocks()) {
+                    if (block instanceof CommentBlock) {
+                        if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG)) {
+                            countSunCopyright++;
+                            if (countSunCopyright > 1) {
+                                validationError(block, "More than one Sun Copyright Block", pfile.getPath());
+                                continue;
+                            }
+                            if (block.hasTag(CommentBlock.TOP_COMMENT_BLOCK)) {
+                                if (!(copyrightBlock.contents().equals(((CommentBlock) block).contents()))) {
+                                    // It should entirely match copyrightText
+                                    validationError(block, "First block has incorrect copyright text", pfile.getPath());
+                                }
+                            } else {
+                                validationError(block, "Sun Copyright Block is not the first comment block", pfile.getPath());
+                            }
+                        }
+                    }
+                }
                 return true;
             }
         };

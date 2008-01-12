@@ -152,6 +152,7 @@ public class LineCommentFile {
             protected LineCommentParsedFile(FileWrapper originalFile) throws IOException {
                 super(originalFile);
                 fileBlocks = new ArrayList(parseBlocks(originalFile));
+                postParse();
             }
 
             /**
