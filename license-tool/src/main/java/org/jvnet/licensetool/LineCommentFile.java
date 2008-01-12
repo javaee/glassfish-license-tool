@@ -57,7 +57,7 @@ public class LineCommentFile {
             parse(lineComment);
         }
 
-        private LineCommentBlock(String prefix, String lineComment, Set<String> tags) {
+        public LineCommentBlock(String prefix, String lineComment, Set<String> tags) {
             super(tags);
             this.prefix = prefix;
             parse(lineComment);
@@ -194,7 +194,7 @@ public class LineCommentFile {
             return new LineCommentParsedFile(file);
         }
 
-        private List<Block> parseBlocks(FileWrapper file) throws IOException {
+        protected List<Block> parseBlocks(FileWrapper file) throws IOException {
             return LineCommentFile.parseBlocks(file, prefix);
         }
     }

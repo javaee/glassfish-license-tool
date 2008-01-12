@@ -83,9 +83,77 @@ public class FileParserFactory {
                     }
                 }
 
-                
+                @Override
+                protected void postParse() {
+                    if(fileBlocks.get(0) instanceof CommentBlock) {
+                        //check if first block is shebang block
+                        if(((CommentBlock)fileBlocks.get(0)).contents().trim().startsWith("#!")) {
+                            //check id next block is comment block.
+                            if((fileBlocks.size() > 1) && fileBlocks.get(1) instanceof CommentBlock) {
+                                fileBlocks.get(1).addTag(CommentBlock.TOP_COMMENT_BLOCK);
+                            }
+                        } else {
+                            fileBlocks.get(0).addTag(CommentBlock.TOP_COMMENT_BLOCK);
+                        }
+                    }
+                }
             };
         }
+
+        @Override
+        protected List<Block> parseBlocks(FileWrapper fw) throws IOException {
+            boolean inComment = false;
+            final List<Block> result = new ArrayList<Block>();
+            StringBuilder sb = new StringBuilder();
+            fw.open(FileWrapper.OpenMode.READ);
+            try {
+                List<String> fileAsLines = FileWrapper.splitToLines(fw.readAsString());
+                int count = 0;
+                for (String line : fileAsLines) {
+                    if (count == 0) {
+                        if (line.startsWith("#!")) {
+                            result.add(new LineCommentFile.LineCommentBlock(prefix, line, new HashSet<String>()));
+                            count++;
+                            continue;
+                        }
+                    }
+                    if (inComment) {
+                        if (line.startsWith(prefix)) {
+                            //previous line is also comment, so append to block
+                            sb.append(line);
+                        } else {
+                            result.add(new LineCommentFile.LineCommentBlock(prefix, sb.toString(), new HashSet<String>()));
+                            sb = new StringBuilder();
+                            inComment = false;
+                            sb.append(line);
+                        }
+                    } else {
+                        if (line.startsWith(prefix)) {
+                            if (sb.length() != 0)
+                                result.add(new PlainBlock(sb.toString()));
+                            inComment = true;
+                            sb = new StringBuilder();
+                            sb.append(line);
+
+                        } else {
+                            //previous line is also not a comment
+                            sb.append(line);
+                        }
+                    }
+                }
+                //add the last block
+                if (sb.length() != 0) {
+                    if (inComment)
+                        result.add(new LineCommentFile.LineCommentBlock(prefix, sb.toString(), new HashSet<String>()));
+                    else
+                        result.add(new PlainBlock(sb.toString()));
+                }
+                return result;
+            } finally {
+                fw.close();
+            }
+        }
+
     }
 
     //BinaryFiles have no comment blocks and not parsed.
