@@ -112,7 +112,7 @@ public class ActionFactory {
                                 continue;
                             }
                             if (block.hasTag(CommentBlock.TOP_COMMENT_BLOCK)) {
-                                if (!(copyrightBlock.contents().equals(((CommentBlock) block).contents()))) {
+                                if (!(copyrightBlock.contents().equals(((CommentBlock) block).comment()))) {
                                     // It should entirely match copyrightText
                                     validationError(block, "First block has incorrect copyright text", pfile.getPath());
                                 }
@@ -228,12 +228,12 @@ public class ActionFactory {
             }
         }
 
-
+        /*
         trace("copyrightBlockAction: blocks in file " + pfile.getPath());
         for (Block block : pfile.getFileBlocks()) {
             traceBlock(block);
         }
-
+        */
         return hadAnOldSunCopyright;
     }
 
@@ -242,7 +242,7 @@ public class ActionFactory {
     }
 
     private void validationError(Block block, String msg, String fw) {
-        trace("Copyright validation error: " + msg + " for " + fw);
+        LOGGER.info("Copyright validation error: " + msg + " for " + fw);
         if (block != null) {
             traceBlock(block);
         }
@@ -250,12 +250,12 @@ public class ActionFactory {
 
     private void traceBlock(Block block) {
 
-        LOGGER.fine("Block=" + block);
-        LOGGER.fine("Block contents:");
+        LOGGER.info("Block=" + block);
+        LOGGER.info("Block contents:");
         if (block instanceof PlainBlock) {
-            LOGGER.fine(((PlainBlock) block).contents());
+            LOGGER.info(((PlainBlock) block).contents());
         } else if (block instanceof CommentBlock) {
-            LOGGER.fine(((CommentBlock) block).contents());
+            LOGGER.info(((CommentBlock) block).contents());
         }
 
     }

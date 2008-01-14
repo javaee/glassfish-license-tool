@@ -110,11 +110,13 @@ public class MultiLineCommentFile {
 
         public String comment() {
             StringBuilder sb = new StringBuilder();
-            sb.append(commentStart.second());
+            if(!commentStart.second().trim().equals(""))
+                sb.append(commentStart.second());
             for(Pair<String,String> line: commentLines) {
                 sb.append(line.second());
             }
-            sb.append(commentEnd.first());            
+            if(!commentEnd.first().trim().equals(""))
+                sb.append(commentEnd.first());            
             return sb.toString();
         }
 

@@ -41,8 +41,10 @@ public class LicenseToolTest
     {   List<String> args = new ArrayList<String>();
         args.add("-validate");
         args.add("true");
-        //args.add("-verbose");
-        //args.add("true");
+        args.add("-verbose");
+        args.add("true");
+        args.add("-dryrun");
+        args.add("false");
         args.add("-roots");
         args.add(new File(getRoot(),"target/test-classes/testsrc").getPath());
         args.add("-skipdirs");
