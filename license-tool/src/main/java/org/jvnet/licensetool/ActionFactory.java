@@ -250,12 +250,12 @@ public class ActionFactory {
 
     private void traceBlock(Block block) {
 
-        LOGGER.info("Block=" + block);
-        LOGGER.info("Block contents:");
+        LOGGER.fine("Block=" + block);
+        LOGGER.fine("Block contents:");
         if (block instanceof PlainBlock) {
-            LOGGER.info(((PlainBlock) block).contents());
+            LOGGER.fine(((PlainBlock) block).contents());
         } else if (block instanceof CommentBlock) {
-            LOGGER.info(((CommentBlock) block).contents());
+            LOGGER.fine(((CommentBlock) block).contents());
         }
 
     }
