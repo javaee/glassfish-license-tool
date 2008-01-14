@@ -36,6 +36,7 @@
 package org.jvnet.licensetool.file;
 
 import java.util.List;
+import java.util.logging.Logger;
 import java.io.IOException;
 
 /**
@@ -72,9 +73,7 @@ public abstract class ParsedFile {
                 }
 
             } else {
-                //if (verbose) {
-                System.out.println("Skipping file " + fw + " because is is not writable");
-                //}
+                LOGGER.info("Skipping file " + fw + " because is is not writable");
             }
         } finally {
             fw.close();
@@ -84,4 +83,6 @@ public abstract class ParsedFile {
     public String getPath() {
         return originalFile.toString();
     }
+
+    private static final Logger LOGGER = Logger.getLogger(FileParser.class.getName());
 }

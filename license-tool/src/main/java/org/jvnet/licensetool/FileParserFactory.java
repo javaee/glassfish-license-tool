@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.logging.Logger;
 
 /**
  * @author Rama Pulavarthi
@@ -161,7 +162,7 @@ public class FileParserFactory {
     // recognized and ignored.
     public static class BinaryFileParser extends FileParser {
         public ParsedFile parseFile(FileWrapper file) throws IOException {
-            System.out.println("Skipped: " + file);
+            LOGGER.fine("Skipped: " + file);
             return null;
         }
     }
@@ -262,5 +263,7 @@ public class FileParserFactory {
             }
         };
     }
+
+    private static Logger LOGGER = Logger.getLogger(FileParserFactory.class.getName());
 
 }

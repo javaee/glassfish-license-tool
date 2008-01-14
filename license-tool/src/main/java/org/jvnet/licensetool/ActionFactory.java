@@ -45,18 +45,10 @@ import org.jvnet.licensetool.file.ParsedFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class ActionFactory {
-    private final boolean verbose;
     private final String COPYRIGHT = "Copyright";
-
-    public ActionFactory() {
-        this(false);
-    }
-
-    public ActionFactory(final boolean verbose) {
-        this.verbose = verbose;
-    }
 
     /**
      * returns an action that returns true.  If verbose is true, the action
@@ -69,9 +61,7 @@ public class ActionFactory {
             }
 
             public boolean evaluate(ParsedFile arg) {
-                if (verbose)
-                    System.out.println(toString() + "called");
-
+                trace(toString() + "called");
                 return true;
             }
 
@@ -89,17 +79,15 @@ public class ActionFactory {
             }
 
             public boolean evaluate(ParsedFile arg) {
-                if (verbose)
-                    System.out.println(toString() + "called.");
+                trace(toString() + "called.");
                 return false;
             }
         };
     }
 
     public Scanner.Action getValidateCopyrightAction(final PlainBlock copyrightBlock) {
-        if (verbose) {
-            trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock);
-        }
+        trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock);
+
 
         return new Scanner.Action() {
             public String toString() {
@@ -148,9 +136,8 @@ public class ActionFactory {
     // file.
 
     public Scanner.Action getModifyCopyrightAction(final PlainBlock copyrightBlock) {
-        if (verbose) {
-            trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock);
-        }
+        trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock);
+
 
         return new Scanner.Action() {
             public String toString() {
@@ -241,35 +228,36 @@ public class ActionFactory {
             }
         }
 
-        if (verbose) {
-            trace("copyrightBlockAction: blocks in file " + pfile.getPath());
-            for (Block block : pfile.getFileBlocks()) {
-                traceBlock(block);
-            }
+
+        trace("copyrightBlockAction: blocks in file " + pfile.getPath());
+        for (Block block : pfile.getFileBlocks()) {
+            traceBlock(block);
         }
+
         return hadAnOldSunCopyright;
     }
 
     private void trace(String msg) {
-        System.out.println(msg);
+        LOGGER.fine(msg);
     }
 
     private void validationError(Block block, String msg, String fw) {
         trace("Copyright validation error: " + msg + " for " + fw);
-        if ((verbose) && (block != null)) {
+        if (block != null) {
             traceBlock(block);
         }
     }
 
     private void traceBlock(Block block) {
 
-        trace("Block=" + block);
-        trace("Block contents:");
+        LOGGER.fine("Block=" + block);
+        LOGGER.fine("Block contents:");
         if (block instanceof PlainBlock) {
-            trace("\"" + ((PlainBlock) block).contents() + "\"");
+            LOGGER.fine(((PlainBlock) block).contents());
         } else if (block instanceof CommentBlock) {
-            trace("\"" + ((PlainBlock) block).contents() + "\"");
+            LOGGER.fine(((PlainBlock) block).contents());
         }
 
     }
+    private static final Logger LOGGER = Logger.getLogger(ActionFactory.class.getName());
 }

@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.*;
 
 public class LicenseTool {
     private LicenseTool() {
@@ -86,7 +87,7 @@ public class LicenseTool {
 
 
     private static void trace(String msg) {
-        System.out.println(msg);
+        LOGGER.fine(msg);
     }
 
     private static final String COPYRIGHT = "Copyright";
@@ -116,27 +117,23 @@ public class LicenseTool {
     }
 
     private static final String START_YEAR = "StartYear";
+    private static final Logger LOGGER = Logger.getLogger(LicenseTool.class.getName());
 
     private static PlainBlock makeCopyrightBlock(String startYear,
                                             PlainBlock copyrightText) {
 
-        if (verbose) {
-            trace("makeCopyrightBlock: startYear = " + startYear);
-            trace("makeCopyrightBlock: copyrightText = " + copyrightText);
+        trace("makeCopyrightBlock: startYear = " + startYear);
+        trace("makeCopyrightBlock: copyrightText = " + copyrightText);
 
-            trace("Contents of copyrightText block:");
-            trace(copyrightText.contents());
-
-        }
+        trace("Contents of copyrightText block:");
+        trace(copyrightText.contents());
 
         Map<String, String> map = new HashMap<String, String>();
         map.put(START_YEAR, startYear);
         PlainBlock withStart = copyrightText.instantiateTemplate(map);
 
-        if (verbose) {
-            trace("Contents of copyrightText block withStart date:");
-            trace(withStart.contents());
-        }
+        trace("Contents of copyrightText block withStart date:");
+        trace(withStart.contents());
 
         return withStart;
     }
@@ -145,31 +142,36 @@ public class LicenseTool {
         String startYear = args.startyear();
         verbose = args.verbose();
         validate = args.validate();
-
-        if (verbose) {
-            trace("Main: args:\n" + args);
+        java.util.logging.StreamHandler sh = new StreamHandler(System.out,new SimpleFormatter());
+        Logger domainLogger = Logger.getLogger("org.jvnet.licensetool");
+        if(verbose) {
+            domainLogger.setLevel(Level.FINE);
+            sh.setLevel(Level.FINE);
         }
+        domainLogger.addHandler(sh);
+        trace("Main: args:\n" + args);
+
 
         try {
             // Create the blocks needed for different forms of the
             // copyright comment template
             final PlainBlock copyrightText = new PlainBlock(args.copyright());
             PlainBlock copyrightBlock = makeCopyrightBlock(startYear, copyrightText);
-            Scanner scanner = new Scanner(verbose, args.dryrun(), args.roots());
+            Scanner scanner = new Scanner(args.dryrun(), args.roots());
             for (String str : args.skipdirs())
                 scanner.addDirectoryToSkip(str);
 
             Scanner.Action action;
             if(validate) {
-                action = new ActionFactory(verbose).getValidateCopyrightAction(copyrightBlock);
+                action = new ActionFactory().getValidateCopyrightAction(copyrightBlock);
             } else {
-                action = new ActionFactory(verbose).getModifyCopyrightAction(copyrightBlock);
+                action = new ActionFactory().getModifyCopyrightAction(copyrightBlock);
                 //action = new ActionFactory(verbose).getReWriteCopyrightAction();
             }
             // Finally, we process all files
             scanner.scan(new RecognizerFactory().getDefaultRecognizer(), action);
         } catch (IOException exc) {
-            System.out.println("Exception while processing: " + exc);
+            LOGGER.warning("Exception while processing: " + exc);
             exc.printStackTrace();
         }
     }

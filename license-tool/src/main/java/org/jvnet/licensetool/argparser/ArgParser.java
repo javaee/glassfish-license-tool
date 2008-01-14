@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -299,8 +300,8 @@ public class ArgParser<T> {
     }
 
     private void error(String msg) {
-        System.out.println("Error in argument parser: " + msg);
-        System.out.println(getHelpText());
+        LOGGER.warning("Error in argument parser: " + msg);
+        LOGGER.info(getHelpText());
         throw new RuntimeException(msg);
     }
 
@@ -464,4 +465,5 @@ public class ArgParser<T> {
         TestInterface result = ap.parse(args);
         System.out.println("Result is:\n" + result);
     }
+    private static Logger LOGGER = Logger.getLogger(ArgParser.class.getName());
 }

@@ -47,26 +47,25 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 /**
  * Recursively scan directories to process files.
  */
 public class Scanner {
     private final List<File> roots;
-    private final boolean verbose;
     //run with dryrun option to check if all the files are recognized.
     private final boolean dryrun;
     private final List<String> patternsToSkip;
 
-    public Scanner(boolean verbose, boolean dryrun, final List<File> files) {
+    public Scanner(boolean dryrun, final List<File> files) {
         this.roots = files;
-        this.verbose = verbose;
         this.dryrun = dryrun;
         patternsToSkip = new ArrayList<String>();
     }
 
     public Scanner(final boolean verbose, final boolean dryrun, final File... files) {
-        this(verbose, dryrun, Arrays.asList(files));
+        this(dryrun, Arrays.asList(files));
     }
 
     /**
@@ -117,7 +116,7 @@ public class Scanner {
             try {
                 FileParser parser = recognizer.getParser(fw);
                 if(parser == null) {
-                    System.out.println("Unrecognized file: " + fw);
+                    LOGGER.warning("Unrecognized file: " + fw);
                     return false;
                 }
                 if(!dryrun) {
@@ -126,11 +125,11 @@ public class Scanner {
                         result = action.evaluate(pfile);
                 }
             } catch (IOException exc) {
-                System.out.println("Exception while processing file " + fw + ": " + exc);
+                LOGGER.warning("Exception while processing file " + fw + ": " + exc);
                 exc.printStackTrace();
                 return false;
             } catch (Exception exc) {
-                System.out.println("Exception while processing file " + fw + ": " + exc);
+                LOGGER.warning("Exception while processing file " + fw + ": " + exc);
                 exc.printStackTrace();
                 return false;
             } finally {
@@ -146,15 +145,12 @@ public class Scanner {
         for (String pattern : patternsToSkip) {
             String absPath = file.getAbsolutePath();
             if (match(pattern, absPath)) {
-                if (verbose)
-                    System.out.println("Scanner: Skipping directory "
+                LOGGER.fine("Scanner: Skipping directory "
                             + absPath + "(pattern " + pattern + ")");
                 return true;
             }
         }
-
-        if (verbose)
-            System.out.println("Scanner: Not skipping directory " + file);
+        LOGGER.fine("Scanner: Not skipping directory " + file);
         return false;
     }
 
@@ -168,8 +164,7 @@ public class Scanner {
         while (st.hasMoreTokens()) {
             final String token = st.nextToken();
             if (pattern.equals(token)) {
-                if (verbose)
-                    System.out.println("fname " + fname
+                LOGGER.fine("fname " + fname
                             + " matched on pattern " + pattern);
                 return true;
             }
@@ -177,4 +172,6 @@ public class Scanner {
 
         return false;
     }
+
+    private static Logger LOGGER = Logger.getLogger(Scanner.class.getName());
 }

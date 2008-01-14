@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class RecognizerFactory {
     public FileRecognizer getDefaultRecognizer() {
@@ -130,7 +131,7 @@ public class RecognizerFactory {
 
                 } catch (IOException exc) {
                     // action is still null
-                    System.out.println("Could not read file " + file + " to check for shell script");
+                    LOGGER.warning("Could not read file " + file + " to check for shell script");
                 } finally {
                     file.close();
                 }
@@ -197,5 +198,6 @@ public class RecognizerFactory {
         }
     }
 
+    private static Logger LOGGER = Logger.getLogger(RecognizerFactory.class.getName());
 
 }
