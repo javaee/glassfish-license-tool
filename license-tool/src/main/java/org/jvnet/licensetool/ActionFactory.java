@@ -255,7 +255,7 @@ public class ActionFactory {
         if (block instanceof PlainBlock) {
             LOGGER.fine(((PlainBlock) block).contents());
         } else if (block instanceof CommentBlock) {
-            LOGGER.fine(((PlainBlock) block).contents());
+            LOGGER.fine(((CommentBlock) block).contents());
         }
 
     }
