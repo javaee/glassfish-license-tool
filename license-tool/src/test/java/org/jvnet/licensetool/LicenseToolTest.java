@@ -40,9 +40,9 @@ public class LicenseToolTest
     public void testApp()
     {   List<String> args = new ArrayList<String>();
         args.add("-validate");
-        args.add("true");
+        args.add("false");
         args.add("-verbose");
-        args.add("true");
+        args.add("false");
         args.add("-dryrun");
         args.add("false");
         args.add("-roots");
