@@ -44,6 +44,7 @@
                                              skipdirs=".svn,.cvs"
                                              copyright="target/test-classes/copyright/copyright.txt"
                                              startyear="1997"
+                                             dryrun="false"   
                                              includes="target/test-classes/testsrc/">
 
                                 </licensetool>
