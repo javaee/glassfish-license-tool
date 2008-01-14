@@ -242,7 +242,7 @@ public class ActionFactory {
     }
 
     private void validationError(Block block, String msg, String fw) {
-        LOGGER.info("Copyright validation error: " + msg + " for " + fw);
+        LOGGER.warning("Copyright validation error: " + msg + " for " + fw);
         if (block != null) {
             traceBlock(block);
         }
