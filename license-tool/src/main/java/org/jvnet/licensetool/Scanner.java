@@ -54,16 +54,19 @@ import java.util.Arrays;
 public class Scanner {
     private final List<File> roots;
     private final boolean verbose;
+    //run with dryrun option to check if all the files are recognized.
+    private final boolean dryrun;
     private final List<String> patternsToSkip;
 
-    public Scanner(boolean verbose, final List<File> files) {
+    public Scanner(boolean verbose, boolean dryrun, final List<File> files) {
         this.roots = files;
         this.verbose = verbose;
+        this.dryrun = dryrun;
         patternsToSkip = new ArrayList<String>();
     }
 
-    public Scanner(final boolean verbose, final File... files) {
-        this(verbose, Arrays.asList(files));
+    public Scanner(final boolean verbose, final boolean dryrun, final File... files) {
+        this(verbose, dryrun, Arrays.asList(files));
     }
 
     /**
@@ -117,9 +120,11 @@ public class Scanner {
                     System.out.println("Unrecognized file: " + fw);
                     return false;
                 }
-                ParsedFile pfile = parser.parseFile(fw);
-                if(pfile != null)
-                    result = action.evaluate(pfile);
+                if(!dryrun) {
+                    ParsedFile pfile = parser.parseFile(fw);
+                    if(pfile != null)
+                        result = action.evaluate(pfile);
+                }
             } catch (IOException exc) {
                 System.out.println("Exception while processing file " + fw + ": " + exc);
                 exc.printStackTrace();

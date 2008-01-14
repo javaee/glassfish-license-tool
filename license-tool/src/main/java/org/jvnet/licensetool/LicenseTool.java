@@ -155,7 +155,7 @@ public class LicenseTool {
             // copyright comment template
             final PlainBlock copyrightText = new PlainBlock(args.copyright());
             PlainBlock copyrightBlock = makeCopyrightBlock(startYear, copyrightText);
-            Scanner scanner = new Scanner(verbose, args.roots());
+            Scanner scanner = new Scanner(verbose, args.dryrun(), args.roots());
             for (String str : args.skipdirs())
                 scanner.addDirectoryToSkip(str);
 
