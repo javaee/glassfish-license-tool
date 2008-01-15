@@ -148,16 +148,15 @@ public class PlainBlock extends Block {
 
         Pattern pattern = Pattern.compile(patternStr, Pattern.MULTILINE | Pattern.DOTALL);
         Matcher matcher = pattern.matcher(data);
-        String fline;
-        String rest = "";
         if (matcher.find()) {
-            fline = matcher.group();
-            rest = data.substring(matcher.end());
-        } else {
-            fline = data;
-        }
-        return new Pair<Block, Block>(
+            String fline = matcher.group();
+            String rest = data.substring(matcher.end());
+            return new Pair<Block, Block>(
                 new PlainBlock(fline, tags), new PlainBlock(rest, tags));
+        } else {
+            return new Pair<Block, Block>(new PlainBlock(data, tags),null);
+        }
+
 
     }
 }

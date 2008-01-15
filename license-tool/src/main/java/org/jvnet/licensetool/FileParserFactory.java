@@ -226,7 +226,8 @@ public class FileParserFactory {
                                 Block xmlDeclaration = splitBlocks.first();
                                 Block restOfXml = splitBlocks.second();
                                 fileBlocks.remove(plainBlock);
-                                fileBlocks.add(0,restOfXml);
+                                if(restOfXml != null)
+                                    fileBlocks.add(0,restOfXml);
                                 fileBlocks.add(0,cb);
                                 fileBlocks.add(0,xmlDeclaration);
                                 adjustBlockAtIndex(2);
