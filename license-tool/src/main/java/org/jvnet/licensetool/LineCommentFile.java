@@ -64,11 +64,11 @@ public class LineCommentFile {
             parse(lineComment);
         }
 
-        public static CommentBlock createCommentBlock(String prefix, final String commentText) {
+        public static CommentBlock createCommentBlock(String prefix, final String commentText, String line_separator) {
             final List<String> commentTextBlock = new ArrayList<String>();
             List<String> dataAslines = FileWrapper.splitToLines(commentText);
             for (String str : dataAslines) {
-                commentTextBlock.add(prefix + str);
+                commentTextBlock.add(prefix + FileWrapper.covertLineBreak(str, line_separator));
             }
             return new LineCommentBlock(prefix, commentTextBlock, new HashSet<String>());
         }
@@ -144,6 +144,7 @@ public class LineCommentFile {
 
         public class LineCommentParsedFile extends ParsedFile {
             protected List<Block> fileBlocks = null;
+            final protected String line_separator;
 
             /**
              * calls postParse() after the file is parsed in to blocks.
@@ -154,6 +155,7 @@ public class LineCommentFile {
                 super(originalFile);
                 fileBlocks = new ArrayList(parseBlocks(originalFile));
                 postParse();
+                line_separator = sniffLineSeparator();
             }
 
             /**
@@ -165,6 +167,25 @@ public class LineCommentFile {
                     fileBlocks.get(0).addTag(CommentBlock.TOP_COMMENT_BLOCK);
                 }
             }
+            protected String sniffLineSeparator(){
+                String separator = null;
+                String blockContent;
+                for(Block b: fileBlocks){
+                    if(b instanceof PlainBlock) {
+                        blockContent = ((PlainBlock)b).contents();
+                    } else {
+                        blockContent = ((CommentBlock)b).contents();
+                    }
+                    separator = FileWrapper.sniffLineSeparator(blockContent);
+                    if(separator != null)
+                        break;
+                }
+                if(separator == null) {
+                    separator = System.getProperty("line.separator");
+                }
+                return separator;
+            }
+            
             
             public List<CommentBlock> getComments() {
                 List<CommentBlock> blocks = new ArrayList<CommentBlock>();
@@ -205,7 +226,7 @@ public class LineCommentFile {
             }
 
             protected CommentBlock createCommentBlock(String commentText) {
-                return LineCommentBlock.createCommentBlock(prefix, commentText);
+                return LineCommentBlock.createCommentBlock(prefix, commentText, line_separator);
             }
         }
 

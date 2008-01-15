@@ -182,7 +182,7 @@ public class FileParserFactory {
                         final List<String> commentTextBlock = new ArrayList<String>();
                         List<String> dataAsLines = FileWrapper.splitToLines(commentText);
                         for (String str : dataAsLines) {
-                            commentTextBlock.add(prefix + str);
+                            commentTextBlock.add(prefix + FileWrapper.covertLineBreak(str, line_separator));
                         }
                         commentTextBlock.add(0, start + line_separator);
                         //Hack to put " " before end prefix "*/"

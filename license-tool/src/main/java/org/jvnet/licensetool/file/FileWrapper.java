@@ -301,4 +301,16 @@ public class FileWrapper implements Closeable {
         return null;
     }
 
+    public static String covertLineBreak(String inputStr, String line_separator) {
+        String patternStr = "(.*)$";
+        Pattern pattern = Pattern.compile(patternStr, Pattern.MULTILINE);
+
+        Matcher matcher = pattern.matcher(inputStr);
+        if (matcher.find()) {
+            return matcher.group() + line_separator;
+        } else {
+            return inputStr;
+        }
+
+    }
 }

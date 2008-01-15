@@ -78,7 +78,7 @@ public class MultiLineCommentFile {
             final List<String> commentTextBlock = new ArrayList<String>();
             List<String> dataAsLines = FileWrapper.splitToLines(commentText);
             for (String str : dataAsLines) {
-                commentTextBlock.add(prefix + str);
+                commentTextBlock.add(prefix + FileWrapper.covertLineBreak(str,line_separator));
             }
             commentTextBlock.add(0, start + line_separator);
             commentTextBlock.add(commentTextBlock.size(), end);
@@ -188,7 +188,7 @@ public class MultiLineCommentFile {
 
         public class BlockCommentParsedFile extends ParsedFile {
             protected List<Block> fileBlocks = null;
-            protected String line_separator;
+            protected final String line_separator;
             /**
              * calls postParse() after the file is parsed in to blocks.
              * @param originalFile
@@ -198,7 +198,7 @@ public class MultiLineCommentFile {
                 super(originalFile);
                 fileBlocks = new ArrayList(parseBlocks(originalFile));
                 postParse();
-                sniffLineSeparator();
+                line_separator = sniffLineSeparator();
             }
 
             /**
@@ -210,7 +210,8 @@ public class MultiLineCommentFile {
                     fileBlocks.get(0).addTag(CommentBlock.TOP_COMMENT_BLOCK);
                 }
             }
-            protected void sniffLineSeparator(){
+            protected String sniffLineSeparator(){
+                String separator = null;
                 String blockContent;
                 for(Block b: fileBlocks){
                     if(b instanceof PlainBlock) {
@@ -218,14 +219,16 @@ public class MultiLineCommentFile {
                     } else {
                         blockContent = ((CommentBlock)b).contents();
                     }
-                    line_separator = FileWrapper.sniffLineSeparator(blockContent);
-                    if(line_separator != null)
+                    separator = FileWrapper.sniffLineSeparator(blockContent);
+                    if(separator != null)
                         break;
                 }
-                if(line_separator == null) {
-                    line_separator = System.getProperty("line.separator");
+                if(separator == null) {
+                    separator = System.getProperty("line.separator");
                 }
+                return separator;
             }
+
             public List<CommentBlock> getComments() {
                 List<CommentBlock> blocks = new ArrayList<CommentBlock>();
                 for (Block b : fileBlocks) {
