@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.logging.Logger;
 import java.io.IOException;
 
 /**
@@ -209,10 +210,11 @@ public class MultiLineCommentFile {
                 }
             }
 
-            public List<Block> getFileBlocks() {
-                List<Block> blocks = new ArrayList<Block>();
+            public List<CommentBlock> getComments() {
+                List<CommentBlock> blocks = new ArrayList<CommentBlock>();
                 for (Block b : fileBlocks) {
-                    blocks.add(b);
+                    if(b instanceof CommentBlock)
+                        blocks.add((CommentBlock) b);
                 }
                 return blocks;
             }
@@ -223,8 +225,26 @@ public class MultiLineCommentFile {
                 fileBlocks.add(0, cb);                
             }
 
-            public void remove(Block cb) {
+            public void remove(CommentBlock cb) {
                 fileBlocks.remove(cb);
+            }
+
+            public void writeTo(FileWrapper fw) throws IOException {
+                   try {
+                    if (fw.canWrite()) {
+                        // TODO this is dangerous: a crash before close will destroy the file!
+                        fw.delete();
+                        fw.open(FileWrapper.OpenMode.WRITE);
+                        for (Block block : fileBlocks) {
+                            block.write(fw);
+                        }
+
+                    } else {
+                        LOGGER.info("Skipping file " + fw + " because is is not writable");
+                    }
+                } finally {
+                    fw.close();
+                }
             }
 
             protected CommentBlock createCommentBlock(String commentText) {
@@ -305,4 +325,6 @@ public class MultiLineCommentFile {
         }
 
     }
+
+    private static final Logger LOGGER = Logger.getLogger(LineCommentFile.class.getName());
 }

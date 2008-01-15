@@ -48,11 +48,11 @@ public abstract class ParsedFile {
         this.originalFile = originalFile;
     }
 
-    public abstract List<Block> getFileBlocks();
+    public abstract List<CommentBlock> getComments();
     
     public abstract void insertCommentBlock(String cb);
 
-    public abstract void remove(Block cb);
+    public abstract void remove(CommentBlock cb);
     
     /**
      * This is similar to writing back to the original file that got parsed.
@@ -62,23 +62,7 @@ public abstract class ParsedFile {
     public void write() throws IOException {
       writeTo(originalFile);
     }
-    public void writeTo(FileWrapper fw) throws IOException {
-        try {
-            if (fw.canWrite()) {
-                // TODO this is dangerous: a crash before close will destroy the file!
-                fw.delete();
-                fw.open(FileWrapper.OpenMode.WRITE);
-                for (Block block : getFileBlocks()) {
-                    block.write(fw);
-                }
-
-            } else {
-                LOGGER.info("Skipping file " + fw + " because is is not writable");
-            }
-        } finally {
-            fw.close();
-        }
-    }
+    public abstract void writeTo(FileWrapper fw) throws IOException ;
 
     public String getPath() {
         return originalFile.toString();

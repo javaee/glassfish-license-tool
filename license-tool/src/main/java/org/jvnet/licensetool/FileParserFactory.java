@@ -71,7 +71,7 @@ public class FileParserFactory {
                                     firstBlock.splitFirst();
                             Block sheBangBlock = splitBlocks.first();
                             Block restBlock = splitBlocks.second();
-                            remove(firstBlock);
+                            fileBlocks.remove(firstBlock);
                             fileBlocks.add(0,restBlock);
                             fileBlocks.add(0,cb);
                             fileBlocks.add(0,sheBangBlock);
@@ -224,7 +224,7 @@ public class FileParserFactory {
                                 Pair<Block, Block> splitBlocks = plainBlock.splitFirst();
                                 Block xmlDeclaration = splitBlocks.first();
                                 Block restOfXml = splitBlocks.second();
-                                remove(plainBlock);
+                                fileBlocks.remove(plainBlock);
                                 fileBlocks.add(0,restOfXml);
                                 fileBlocks.add(0,cb);
                                 fileBlocks.add(0,xmlDeclaration);

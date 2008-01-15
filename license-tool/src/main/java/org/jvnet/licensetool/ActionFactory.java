@@ -98,27 +98,25 @@ public class ActionFactory {
             public boolean evaluate(ParsedFile pfile) {
                 //tag blocks
                 boolean hadAnOldSunCopyright = tagBlocks(pfile);
-                if(!hadAnOldSunCopyright) {
-                    validationError(null,"No Sun Copyright header in ", pfile.getPath());
+                if (!hadAnOldSunCopyright) {
+                    validationError(null, "No Sun Copyright header in ", pfile.getPath());
                 }
                 // There should be a Sun copyright block in the first block
                 int countSunCopyright = 0;
-                for (Block block : pfile.getFileBlocks()) {
-                    if (block instanceof CommentBlock) {
-                        if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG)) {
-                            countSunCopyright++;
-                            if (countSunCopyright > 1) {
-                                validationError(block, "More than one Sun Copyright Block", pfile.getPath());
-                                continue;
+                for (CommentBlock block : pfile.getComments()) {
+                    if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG)) {
+                        countSunCopyright++;
+                        if (countSunCopyright > 1) {
+                            validationError(block, "More than one Sun Copyright Block", pfile.getPath());
+                            continue;
+                        }
+                        if (block.hasTag(CommentBlock.TOP_COMMENT_BLOCK)) {
+                            if (!(copyrightBlock.contents().equals(block.comment()))) {
+                                // It should entirely match copyrightText
+                                validationError(block, "First block has incorrect copyright text", pfile.getPath());
                             }
-                            if (block.hasTag(CommentBlock.TOP_COMMENT_BLOCK)) {
-                                if (!(copyrightBlock.contents().equals(((CommentBlock) block).comment()))) {
-                                    // It should entirely match copyrightText
-                                    validationError(block, "First block has incorrect copyright text", pfile.getPath());
-                                }
-                            } else {
-                                validationError(block, "Sun Copyright Block is not the first comment block", pfile.getPath());
-                            }
+                        } else {
+                            validationError(block, "Sun Copyright Block is not the first comment block", pfile.getPath());
                         }
                     }
                 }
@@ -148,32 +146,30 @@ public class ActionFactory {
                 //tag blocks
                 boolean hadAnOldSunCopyright = tagBlocks(pfile);
                 trace("Updating copyright/license header on file " + pfile.getPath());
-                if(!hadAnOldSunCopyright) {
+                if (!hadAnOldSunCopyright) {
                     trace("Insert: No Sun Copyright header in " + pfile.getPath());
                     pfile.insertCommentBlock(copyrightBlock.contents());
                 }
                 int countSunCopyright = 0;
-                for (Block block : pfile.getFileBlocks()) {
-                    if (block instanceof CommentBlock) {
-                        if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG)) {
-                            countSunCopyright++;
-                            if (countSunCopyright > 1) {
-                                trace("Remove: More than one Sun Copyright Block "+ pfile.getPath());
-                                pfile.remove(block);
-                                continue;
-                            }
-                            if (block.hasTag(CommentBlock.TOP_COMMENT_BLOCK)) {
-                                if (!(copyrightBlock.contents().equals(((CommentBlock) block).contents()))) {
-                                    // It should entirely match copyrightText
-                                    trace("Replace: First block has incorrect copyright text "+ pfile.getPath());
-                                    pfile.remove(block);
-                                    pfile.insertCommentBlock(copyrightBlock.contents());
-                                }
-                            } else {
-                                trace("Move: Sun Copyright Block is not the first comment block"+ pfile.getPath());
+                for (CommentBlock block : pfile.getComments()) {
+                    if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG)) {
+                        countSunCopyright++;
+                        if (countSunCopyright > 1) {
+                            trace("Remove: More than one Sun Copyright Block " + pfile.getPath());
+                            pfile.remove(block);
+                            continue;
+                        }
+                        if (block.hasTag(CommentBlock.TOP_COMMENT_BLOCK)) {
+                            if (!(copyrightBlock.contents().equals(block.contents()))) {
+                                // It should entirely match copyrightText
+                                trace("Replace: First block has incorrect copyright text " + pfile.getPath());
                                 pfile.remove(block);
                                 pfile.insertCommentBlock(copyrightBlock.contents());
                             }
+                        } else {
+                            trace("Move: Sun Copyright Block is not the first comment block" + pfile.getPath());
+                            pfile.remove(block);
+                            pfile.insertCommentBlock(copyrightBlock.contents());
                         }
                     }
                 }
@@ -192,7 +188,6 @@ public class ActionFactory {
     //Just delete the original file and rewrite it to test if parsing and writing back works correctly.
 
     public Scanner.Action getReWriteCopyrightAction() {
-
         return new Scanner.Action() {
             public boolean evaluate(ParsedFile pfile) {
                 try {
@@ -210,20 +205,17 @@ public class ActionFactory {
     private boolean tagBlocks(ParsedFile pfile) {
         boolean hadAnOldSunCopyright = false;
         // Tag blocks
-        for (Block block : pfile.getFileBlocks()) {
-            if(block instanceof CommentBlock) {
-                CommentBlock cb = (CommentBlock)block;
-                String str = cb.find(COPYRIGHT);
-                if (str != null) {
-                    block.addTag(COPYRIGHT_BLOCK_TAG);
-                    String cddl = cb.find("CDDL");
-                    if (cddl != null) {
-                        block.addTag("CDDL_TAG");
-                    }
-                    if (str.contains("Sun")) {
-                        block.addTag(SUN_COPYRIGHT_TAG);
-                        hadAnOldSunCopyright = true;
-                    }
+        for (CommentBlock cb : pfile.getComments()) {
+            String str = cb.find(COPYRIGHT);
+            if (str != null) {
+                cb.addTag(COPYRIGHT_BLOCK_TAG);
+                String cddl = cb.find("CDDL");
+                if (cddl != null) {
+                    cb.addTag("CDDL_TAG");
+                }
+                if (str.contains("Sun")) {
+                    cb.addTag(SUN_COPYRIGHT_TAG);
+                    hadAnOldSunCopyright = true;
                 }
             }
         }
