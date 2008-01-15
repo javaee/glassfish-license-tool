@@ -184,9 +184,9 @@ public class FileParserFactory {
                         for (String str : dataAsLines) {
                             commentTextBlock.add(prefix + str);
                         }
-                        commentTextBlock.add(0, start + "\n");
+                        commentTextBlock.add(0, start + line_separator);
                         //Hack to put " " before end prefix "*/"
-                        commentTextBlock.add(commentTextBlock.size(), " "+end + "\n");
+                        commentTextBlock.add(commentTextBlock.size(), " "+end + line_separator);
 
                         return new MultiLineCommentFile.MultiLineCommentBlock(start, end, prefix, commentTextBlock, new HashSet<String>());
                     }

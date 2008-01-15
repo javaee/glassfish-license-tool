@@ -74,14 +74,14 @@ public class MultiLineCommentFile {
         }
 
         public static CommentBlock createCommentBlock(String start, String end, String prefix,
-                                                      final String commentText) {
+                                                      final String commentText, final String line_separator) {
             final List<String> commentTextBlock = new ArrayList<String>();
             List<String> dataAsLines = FileWrapper.splitToLines(commentText);
             for (String str : dataAsLines) {
                 commentTextBlock.add(prefix + str);
             }
-            commentTextBlock.add(0, start + "\n");
-            commentTextBlock.add(commentTextBlock.size(), end + "\n");
+            commentTextBlock.add(0, start + line_separator);
+            commentTextBlock.add(commentTextBlock.size(), end + line_separator);
             return  new MultiLineCommentBlock(start, end, prefix, commentTextBlock, new HashSet<String>());
         }
 
@@ -188,7 +188,7 @@ public class MultiLineCommentFile {
 
         public class BlockCommentParsedFile extends ParsedFile {
             protected List<Block> fileBlocks = null;
-
+            protected String line_separator;
             /**
              * calls postParse() after the file is parsed in to blocks.
              * @param originalFile
@@ -198,6 +198,7 @@ public class MultiLineCommentFile {
                 super(originalFile);
                 fileBlocks = new ArrayList(parseBlocks(originalFile));
                 postParse();
+                sniffLineSeparator();
             }
 
             /**
@@ -209,7 +210,22 @@ public class MultiLineCommentFile {
                     fileBlocks.get(0).addTag(CommentBlock.TOP_COMMENT_BLOCK);
                 }
             }
-
+            protected void sniffLineSeparator(){
+                String blockContent;
+                for(Block b: fileBlocks){
+                    if(b instanceof PlainBlock) {
+                        blockContent = ((PlainBlock)b).contents();
+                    } else {
+                        blockContent = ((CommentBlock)b).contents();
+                    }
+                    line_separator = FileWrapper.sniffLineSeparator(blockContent);
+                    if(line_separator != null)
+                        break;
+                }
+                if(line_separator == null) {
+                    line_separator = System.getProperty("line.separator");
+                }
+            }
             public List<CommentBlock> getComments() {
                 List<CommentBlock> blocks = new ArrayList<CommentBlock>();
                 for (Block b : fileBlocks) {
@@ -248,7 +264,7 @@ public class MultiLineCommentFile {
             }
 
             protected CommentBlock createCommentBlock(String commentText) {
-                return MultiLineCommentBlock.createCommentBlock(start, end, prefix, commentText);
+                return MultiLineCommentBlock.createCommentBlock(start, end, prefix, commentText, line_separator);
             }
 
         }

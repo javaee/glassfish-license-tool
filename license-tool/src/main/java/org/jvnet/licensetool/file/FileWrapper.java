@@ -287,4 +287,18 @@ public class FileWrapper implements Closeable {
         return lines;
     }
 
+    public static String sniffLineSeparator(String data) {
+        List<String> lines = splitToLines(data);
+        String fline = lines.get(0);
+        int flineLength = fline.length();
+        if((fline.charAt(flineLength-2)=='\r') && (fline.charAt(flineLength-1)=='\n')) {
+            return "\r\n";
+        } else if(fline.charAt(flineLength-1)=='\n'){
+                return "\n";
+        } else if(fline.charAt(flineLength-1)=='\r'){
+                return "\r";
+        }
+        return null;
+    }
+
 }
