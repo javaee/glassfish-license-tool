@@ -186,7 +186,7 @@ public class FileParserFactory {
                         }
                         commentTextBlock.add(0, start + line_separator);
                         //Hack to put " " before end prefix "*/"
-                        commentTextBlock.add(commentTextBlock.size(), " "+end + line_separator);
+                        commentTextBlock.add(commentTextBlock.size(), " "+end);
 
                         return new MultiLineCommentFile.MultiLineCommentBlock(start, end, prefix, commentTextBlock, new HashSet<String>());
                     }
@@ -213,6 +213,7 @@ public class FileParserFactory {
                         Block firstBlock = fileBlocks.get(0);
                         if (firstBlock instanceof CommentBlock) {
                             fileBlocks.add(0,cb);
+                            adjustBlockAtIndex(1);
                         } else {
                             PlainBlock plainBlock = (PlainBlock) firstBlock;
                             List<String> lines = FileWrapper.splitToLines(plainBlock.contents());
@@ -228,8 +229,10 @@ public class FileParserFactory {
                                 fileBlocks.add(0,restOfXml);
                                 fileBlocks.add(0,cb);
                                 fileBlocks.add(0,xmlDeclaration);
+                                adjustBlockAtIndex(2);
                             } else {
                                 fileBlocks.add(0,cb);
+                                adjustBlockAtIndex(1);
                             }
                         }                        
                     }
@@ -244,7 +247,7 @@ public class FileParserFactory {
                             String firstLine =content.get(0);
                             if(firstLine.trim().startsWith("<?xml") && firstLine.trim().endsWith("?>")) {
                                 if(content.size() > 1) {
-                                    for(int i=1; i<=content.size();i++) {
+                                    for(int i=1; i<content.size();i++) {
                                         // after first line, there is non-empty content
                                         if(!(content.get(i).trim().equals("")))
                                             return;

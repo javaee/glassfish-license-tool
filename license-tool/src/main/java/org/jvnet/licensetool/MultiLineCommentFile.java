@@ -81,7 +81,7 @@ public class MultiLineCommentFile {
                 commentTextBlock.add(prefix + str);
             }
             commentTextBlock.add(0, start + line_separator);
-            commentTextBlock.add(commentTextBlock.size(), end + line_separator);
+            commentTextBlock.add(commentTextBlock.size(), end);
             return  new MultiLineCommentBlock(start, end, prefix, commentTextBlock, new HashSet<String>());
         }
 
@@ -238,7 +238,19 @@ public class MultiLineCommentFile {
             public void insertCommentBlock(String commentText) {
                 CommentBlock cb = createCommentBlock(commentText);
                 cb.addTag(CommentBlock.TOP_COMMENT_BLOCK);
-                fileBlocks.add(0, cb);                
+                fileBlocks.add(0, cb);
+                adjustBlockAtIndex(1);
+            }
+
+            protected void adjustBlockAtIndex(int i) {
+                Block b = fileBlocks.get(i);
+                if(b instanceof PlainBlock) {
+                    String content = ((PlainBlock)b).contents();
+                    if(content.startsWith(line_separator)) {
+                       return;
+                    }
+                }
+                fileBlocks.add(i, new PlainBlock(line_separator));
             }
 
             public void remove(CommentBlock cb) {
