@@ -311,6 +311,17 @@ public class FileWrapper implements Closeable {
         } else {
             return inputStr;
         }
+    }
 
+    public static boolean areCommentsEqual(String exp, String got) {
+        List<String> expLines = splitToLines(exp);
+        List<String> gotLines = splitToLines(got);
+        if(expLines.size() != gotLines.size())
+            return false;
+        for(int i=0;i<expLines.size();i++) {
+            if(!(expLines.get(i).trim().equals(gotLines.get(i).trim())))
+                return false;
+        }
+        return true;
     }
 }
