@@ -37,6 +37,8 @@ package org.jvnet.licensetool;
 
 import org.jvnet.licensetool.file.*;
 import org.jvnet.licensetool.generic.Pair;
+import org.jvnet.licensetool.util.ToolUtil;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -76,9 +78,9 @@ public class MultiLineCommentFile {
         public static CommentBlock createCommentBlock(String start, String end, String prefix,
                                                       final String commentText, final String line_separator) {
             final List<String> commentTextBlock = new ArrayList<String>();
-            List<String> dataAsLines = FileWrapper.splitToLines(commentText);
+            List<String> dataAsLines = ToolUtil.splitToLines(commentText);
             for (String str : dataAsLines) {
-                commentTextBlock.add(prefix + FileWrapper.covertLineBreak(str,line_separator));
+                commentTextBlock.add(prefix + ToolUtil.covertLineBreak(str,line_separator));
             }
             commentTextBlock.add(0, start + line_separator);
             commentTextBlock.add(commentTextBlock.size(), end);
@@ -88,7 +90,7 @@ public class MultiLineCommentFile {
         public Block replace(String content) {
             commentStart = new Pair<String, String>(commentStart.first(), "");
             commentLines.clear();
-            List<String> parsedData = FileWrapper.splitToLines(content);
+            List<String> parsedData = ToolUtil.splitToLines(content);
             for (String str : parsedData) {
                 commentLines.add(new Pair<String, String>(prefix, str));
             }
@@ -170,7 +172,7 @@ public class MultiLineCommentFile {
         }
 
         private void parse(String data) {
-            List<String> dataAsLines = FileWrapper.splitToLines(data);
+            List<String> dataAsLines = ToolUtil.splitToLines(data);
             parse(dataAsLines);
         }
     }
@@ -219,7 +221,7 @@ public class MultiLineCommentFile {
                     } else {
                         blockContent = ((CommentBlock)b).contents();
                     }
-                    separator = FileWrapper.sniffLineSeparator(blockContent);
+                    separator = ToolUtil.sniffLineSeparator(blockContent);
                     if(separator != null)
                         break;
                 }

@@ -37,6 +37,8 @@ package org.jvnet.licensetool;
 
 import org.jvnet.licensetool.file.*;
 import org.jvnet.licensetool.generic.Pair;
+import org.jvnet.licensetool.util.ToolUtil;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -66,16 +68,16 @@ public class LineCommentFile {
 
         public static CommentBlock createCommentBlock(String prefix, final String commentText, String line_separator) {
             final List<String> commentTextBlock = new ArrayList<String>();
-            List<String> dataAslines = FileWrapper.splitToLines(commentText);
+            List<String> dataAslines = ToolUtil.splitToLines(commentText);
             for (String str : dataAslines) {
-                commentTextBlock.add(prefix + FileWrapper.covertLineBreak(str, line_separator));
+                commentTextBlock.add(prefix + ToolUtil.covertLineBreak(str, line_separator));
             }
             return new LineCommentBlock(prefix, commentTextBlock, new HashSet<String>());
         }
 
         public Block replace(String content) {
             commentLines.clear();
-            List<String> dataAslines = FileWrapper.splitToLines(content);
+            List<String> dataAslines = ToolUtil.splitToLines(content);
             for (String str : dataAslines) {
                 commentLines.add(new Pair<String, String>(prefix, str));
             }
@@ -100,7 +102,7 @@ public class LineCommentFile {
         }
 
         private void parse(String data) {
-            List<String> dataAsLines = FileWrapper.splitToLines(data);
+            List<String> dataAsLines = ToolUtil.splitToLines(data);
             parse(dataAsLines);
         }
 
@@ -176,7 +178,7 @@ public class LineCommentFile {
                     } else {
                         blockContent = ((CommentBlock)b).contents();
                     }
-                    separator = FileWrapper.sniffLineSeparator(blockContent);
+                    separator = ToolUtil.sniffLineSeparator(blockContent);
                     if(separator != null)
                         break;
                 }
@@ -259,7 +261,7 @@ public class LineCommentFile {
         StringBuilder sb = new StringBuilder();
         fw.open(FileWrapper.OpenMode.READ);
         try {
-            List<String> fileAsLines = FileWrapper.splitToLines(fw.readAsString());
+            List<String> fileAsLines = ToolUtil.splitToLines(fw.readAsString());
 
             for (String line : fileAsLines) {
                 if (inComment) {

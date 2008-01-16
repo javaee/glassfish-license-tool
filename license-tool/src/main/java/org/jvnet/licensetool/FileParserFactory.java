@@ -37,10 +37,10 @@ package org.jvnet.licensetool;
 
 import org.jvnet.licensetool.file.*;
 import org.jvnet.licensetool.generic.Pair;
+import org.jvnet.licensetool.util.ToolUtil;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.logging.Logger;
@@ -108,7 +108,7 @@ public class FileParserFactory {
             StringBuilder sb = new StringBuilder();
             fw.open(FileWrapper.OpenMode.READ);
             try {
-                List<String> fileAsLines = FileWrapper.splitToLines(fw.readAsString());
+                List<String> fileAsLines = ToolUtil.splitToLines(fw.readAsString());
                 int count = 0;
                 for (String line : fileAsLines) {
                     if (count == 0) {
@@ -180,9 +180,9 @@ public class FileParserFactory {
                     protected CommentBlock createCommentBlock(String commentText) {
 
                         final List<String> commentTextBlock = new ArrayList<String>();
-                        List<String> dataAsLines = FileWrapper.splitToLines(commentText);
+                        List<String> dataAsLines = ToolUtil.splitToLines(commentText);
                         for (String str : dataAsLines) {
-                            commentTextBlock.add(prefix + FileWrapper.covertLineBreak(str, line_separator));
+                            commentTextBlock.add(prefix + ToolUtil.covertLineBreak(str, line_separator));
                         }
                         commentTextBlock.add(0, start + line_separator);
                         //Hack to put " " before end prefix "*/"
@@ -216,7 +216,7 @@ public class FileParserFactory {
                             adjustBlockAtIndex(1);
                         } else {
                             PlainBlock plainBlock = (PlainBlock) firstBlock;
-                            List<String> lines = FileWrapper.splitToLines(plainBlock.contents());
+                            List<String> lines = ToolUtil.splitToLines(plainBlock.contents());
                             String firstLine = lines.get(0);
                             if (firstLine.trim().startsWith("<?xml")) {
                                 if (!firstLine.trim().endsWith("?>")) {
@@ -244,7 +244,7 @@ public class FileParserFactory {
                         if(b instanceof CommentBlock)
                             b.addTag(CommentBlock.TOP_COMMENT_BLOCK);
                         else if(b instanceof PlainBlock) {
-                            List<String> content = FileWrapper.splitToLines(((PlainBlock)b).contents());
+                            List<String> content = ToolUtil.splitToLines(((PlainBlock)b).contents());
                             String firstLine =content.get(0);
                             if(firstLine.trim().startsWith("<?xml") && firstLine.trim().endsWith("?>")) {
                                 if(content.size() > 1) {

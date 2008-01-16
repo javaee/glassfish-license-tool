@@ -37,11 +37,10 @@ package org.jvnet.licensetool;
 
 import static org.jvnet.licensetool.Tags.COPYRIGHT_BLOCK_TAG;
 import static org.jvnet.licensetool.Tags.SUN_COPYRIGHT_TAG;
-import static org.jvnet.licensetool.file.CommentBlock.COMMENT_BLOCK_TAG;
 import org.jvnet.licensetool.file.*;
+import org.jvnet.licensetool.util.ToolUtil;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.logging.Logger;
 
 public class ActionFactory {
@@ -108,7 +107,7 @@ public class ActionFactory {
                             continue;
                         }
                         if (block.hasTag(CommentBlock.TOP_COMMENT_BLOCK)) {
-                            if (!(FileWrapper.areCommentsEqual(copyrightBlock.contents(),block.comment()))) {
+                            if (!(ToolUtil.areCommentsEqual(copyrightBlock.contents(),block.comment()))) {
                                 // It should entirely match copyrightText
                                 validationError(block, "First block has incorrect copyright text", pfile.getPath());
                             }
@@ -157,7 +156,7 @@ public class ActionFactory {
                             continue;
                         }
                         if (block.hasTag(CommentBlock.TOP_COMMENT_BLOCK)) {
-                            if (!(FileWrapper.areCommentsEqual(copyrightBlock.contents(),block.comment()))) {
+                            if (!(ToolUtil.areCommentsEqual(copyrightBlock.contents(),block.comment()))) {
                                 // It should entirely match copyrightText
                                 trace("Replace: First block has incorrect copyright text " + pfile.getPath());
                                 pfile.remove(block);
