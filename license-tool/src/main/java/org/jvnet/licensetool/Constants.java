@@ -39,9 +39,8 @@ public class Constants {
     public static final String[] JAVA_LIKE_SUFFIXES = {
             "c", "h", "java", "sjava", "idl"};
     public static final String[] XML_LIKE_SUFFIXES = {
-            "htm", "html", "xml", "dtd", "rng", "xsd", "sxd", "vsd"};
+            "htm", "html", "xml", "dtd", "rng", "xsd"};
    
-
     public static final String[] JAVA_LINE_LIKE_SUFFIXES = {
             "tdesc", "policy", "secure"};
     public static final String JAVA_LINE_PREFIX = "// ";
@@ -66,10 +65,15 @@ public class Constants {
             "sxc", "sxi", "sxw", "odp", "gif", "png", "jar", "zip", "jpg", "pom",
             "pdf", "doc", "mif", "fm", "book", "zargo", "zuml", "cvsignore",
             "hgignore", "list", "old", "orig", "rej", "swp", "swo", "class", "o",
-            "javaref", "idlref", "css", "DS_Store", "jj"};
+            "javaref", "idlref", "css", "DS_Store", "jj", "sxd", "vsd"};
 
     // Special file names to ignore
     public static final String[] IGNORE_FILE_NAMES = {
             "NORENAME", "errorfile", "sed_pattern_file.version"
+    };
+
+    // Special file names to ignore
+    public static final String[] IGNORE_FILE_NAMES_EXTRA = {
+            "default", "AnnotationProcessorFactory", "Plugin",
     };
 }
