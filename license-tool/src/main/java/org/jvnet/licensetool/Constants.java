@@ -74,6 +74,6 @@ public class Constants {
 
     // Special file names to ignore
     public static final String[] IGNORE_FILE_NAMES_EXTRA = {
-            "default", "AnnotationProcessorFactory", "Plugin",
+            "default", "AnnotationProcessorFactory", "Plugin"
     };
 }
