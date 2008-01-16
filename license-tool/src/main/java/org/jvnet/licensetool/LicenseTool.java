@@ -43,6 +43,8 @@ import org.jvnet.licensetool.file.FileWrapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,8 +144,35 @@ public class LicenseTool {
         String startYear = args.startyear();
         verbose = args.verbose();
         validate = args.validate();
-        java.util.logging.StreamHandler sh = new StreamHandler(System.out,new SimpleFormatter());
+        Formatter formatter = new Formatter() {
+            private String lineSeparator = (String) java.security.AccessController.doPrivileged(
+                    new sun.security.action.GetPropertyAction("line.separator"));
+
+            public String format(LogRecord record) {
+                StringBuffer sb = new StringBuffer();
+                String message = formatMessage(record);
+                sb.append(record.getLevel().getLocalizedName());
+                sb.append(": ");
+                sb.append(message);
+                sb.append(lineSeparator);
+                if (record.getThrown() != null) {
+                    try {
+                        StringWriter sw = new StringWriter();
+                        PrintWriter pw = new PrintWriter(sw);
+                        record.getThrown().printStackTrace(pw);
+                        pw.close();
+                        sb.append(sw.toString());
+                    } catch (Exception ex) {
+                    }
+                }
+                return sb.toString();
+            }
+
+        };
+        java.util.logging.StreamHandler sh = new StreamHandler(System.out,formatter);
         Logger domainLogger = Logger.getLogger("org.jvnet.licensetool");
+        domainLogger.setUseParentHandlers(false);
+        
         if(verbose) {
             domainLogger.setLevel(Level.FINE);
             sh.setLevel(Level.FINE);
