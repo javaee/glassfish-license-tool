@@ -69,9 +69,11 @@ public class LineCommentFile {
         public static CommentBlock createCommentBlock(String prefix, final String commentText, String line_separator) {
             final List<String> commentTextBlock = new ArrayList<String>();
             List<String> dataAslines = ToolUtil.splitToLines(commentText);
+            commentTextBlock.add(prefix+line_separator);
             for (String str : dataAslines) {
                 commentTextBlock.add(prefix + ToolUtil.covertLineBreak(str, line_separator));
             }
+            commentTextBlock.add(prefix+line_separator);
             return new LineCommentBlock(prefix, commentTextBlock, new HashSet<String>());
         }
 
@@ -202,6 +204,18 @@ public class LineCommentFile {
                 CommentBlock cb = createCommentBlock(commentText);
                 cb.addTag(CommentBlock.TOP_COMMENT_BLOCK);
                 fileBlocks.add(0, cb);
+                adjustBlockAtIndex(1);
+            }
+
+            protected void adjustBlockAtIndex(int i) {
+                Block b = fileBlocks.get(i);
+                if(b instanceof PlainBlock) {
+                    String content = ((PlainBlock)b).contents();
+                    if(content.startsWith(line_separator)) {
+                       return;
+                    }
+                }
+                fileBlocks.add(i, new PlainBlock(line_separator));
             }
 
             public void remove(CommentBlock cb) {
