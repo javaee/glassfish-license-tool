@@ -195,6 +195,14 @@ public class FileParserFactory {
         };
     }
 
+    public static FileParser createJSPFileParser() {
+        final String JSP_COMMENT_START = "<%--";
+        final String JSP_COMMENT_PREFIX = "";
+        final String JSP_COMMENT_END = "--%>";
+        return new MultiLineCommentFile.MultiLineCommentFileParser(JSP_COMMENT_START, JSP_COMMENT_END,
+                JSP_COMMENT_PREFIX);
+    }
+
     public static FileParser createXMLFileParser() {
         final String XML_COMMENT_START = "<!--";
         final String XML_COMMENT_PREFIX = "";

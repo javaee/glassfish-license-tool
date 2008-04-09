@@ -40,7 +40,8 @@ public class Constants {
             "c", "h", "java", "sjava", "idl"};
     public static final String[] XML_LIKE_SUFFIXES = {
             "htm", "html", "xml", "dtd", "rng", "xsd"};
-   
+    public static final String[] JSP_LIKE_SUFFIXES = {
+            "jsp"};    
     public static final String[] JAVA_LINE_LIKE_SUFFIXES = {
             "tdesc", "policy", "secure"};
     public static final String JAVA_LINE_PREFIX = "// ";

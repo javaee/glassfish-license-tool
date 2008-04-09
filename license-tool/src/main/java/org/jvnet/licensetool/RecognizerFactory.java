@@ -73,6 +73,12 @@ public class RecognizerFactory {
                             FileParserFactory.createXMLFileParser()));
         }
 
+        // JSP
+        for (String suffix : JSP_LIKE_SUFFIXES) {
+            recognizer.addRecognizer(suffix,
+                    new FileSuffixRecognizer(suffix,
+                            FileParserFactory.createJSPFileParser()));
+        }
         // Scheme
 	    for (String suffix : SCHEME_LIKE_SUFFIXES) {
 		    recognizer.addRecognizer(suffix, new FileSuffixRecognizer(suffix,
