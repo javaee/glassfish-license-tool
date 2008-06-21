@@ -69,13 +69,16 @@ public class LineCommentFile {
         public static CommentBlock createCommentBlock(String prefix, final String commentText, String line_separator) {
             final List<String> commentTextBlock = new ArrayList<String>();
             List<String> dataAslines = ToolUtil.splitToLines(commentText);
-            commentTextBlock.add(prefix+line_separator);
+            if (!dataAslines.get(0).trim().equals(""))
+                commentTextBlock.add(prefix + line_separator);
             for (String str : dataAslines) {
                 commentTextBlock.add(prefix + ToolUtil.covertLineBreak(str, line_separator));
             }
-            commentTextBlock.add(prefix+line_separator);
+            if (!dataAslines.get(dataAslines.size() - 1).trim().equals(""))
+                commentTextBlock.add(prefix + line_separator);
             return new LineCommentBlock(prefix, commentTextBlock, new HashSet<String>());
         }
+
 
         public Block replace(String content) {
             commentLines.clear();
@@ -100,7 +103,7 @@ public class LineCommentFile {
             for(Pair<String,String> line: commentLines) {
                 sb.append(line.second());
             }
-            return sb.toString();
+            return sb.toString().trim();
         }
 
         private void parse(String data) {
