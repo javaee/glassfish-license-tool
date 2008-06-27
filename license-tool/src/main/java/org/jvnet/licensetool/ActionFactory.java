@@ -107,7 +107,7 @@ public class ActionFactory {
                             continue;
                         }
                         if (block.hasTag(CommentBlock.TOP_COMMENT_BLOCK)) {
-                            if (!(ToolUtil.areCommentsEqual(copyrightBlock.contents(),block.comment()))) {
+                            if (!(ToolUtil.areCommentsSimilar(copyrightBlock.contents(),block.comment()))) {
                                 // It should entirely match copyrightText
                                 validationError(block, "First block has incorrect copyright text", pfile.getPath());
                             }
@@ -156,7 +156,7 @@ public class ActionFactory {
                             continue;
                         }
                         if (block.hasTag(CommentBlock.TOP_COMMENT_BLOCK)) {
-                            if (!(ToolUtil.areCommentsEqual(copyrightBlock.contents(),block.comment()))) {
+                            if (!(ToolUtil.areCommentsSimilar(copyrightBlock.contents(), block.comment()))) {
                                 // It should entirely match copyrightText
                                 trace("Replace: First block has incorrect copyright text " + pfile.getPath());
                                 pfile.remove(block);

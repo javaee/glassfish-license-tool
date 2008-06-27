@@ -102,4 +102,15 @@ public class ToolUtil {
         }
         return true;
     }
+
+    public static boolean areCommentsSimilar(String exp, String got) {
+        if(EditDistance.editDistance(exp,got) <=  10) {
+            return true;
+        }
+        System.out.println("Expected: " + exp);
+        System.out.println("Got     : " + got);
+        return false;
+
+    }
+
 }
