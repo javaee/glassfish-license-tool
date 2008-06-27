@@ -104,12 +104,21 @@ public class ToolUtil {
     }
 
     public static boolean areCommentsSimilar(String exp, String got) {
+        exp = normalizeString(exp);
+        got = normalizeString(got);
         if(EditDistance.editDistance(exp,got) <=  10) {
             return true;
         }
-        System.out.println("Expected: " + exp);
-        System.out.println("Got     : " + got);
+//        System.out.println("Expected: " + exp);
+//        System.out.println("Got     : " + got);
         return false;
+
+    }
+
+    private static String normalizeString(String s) {
+        s = s.replace("\r\n","\n");
+        s = s.replace("\r","\n");
+        return s;
 
     }
 
