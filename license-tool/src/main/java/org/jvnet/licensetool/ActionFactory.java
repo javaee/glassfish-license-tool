@@ -121,6 +121,29 @@ public class ActionFactory {
         };
     }
 
+    public Scanner.Action getValidateEmptyCommentBlockAction(final PlainBlock copyrightBlock) {
+
+        return new Scanner.Action() {
+            public String toString() {
+                return "CopyrightBlockAction[copyrightText=" + copyrightBlock + "]";
+            }
+
+            // Generally always return true, because we want to see ALL validation errors.
+            public boolean evaluate(ParsedFile pfile) {
+                for (CommentBlock block : pfile.getComments()) {
+                    if(isEmpty(block.comment())){
+                       validationError(block, "Empty comment block in", pfile.getPath());
+                    }
+                }
+                return true;
+            }
+
+            private boolean isEmpty(String content) {
+                return content.trim().equals("");
+            }
+        };
+    }
+
     // Strip out old Sun copyright block.  Prepend new copyrightText.
     // copyrightText is a Block containing a copyright template in the correct comment format.
     // parseCall is the correct block parser for splitting the file into Blocks.

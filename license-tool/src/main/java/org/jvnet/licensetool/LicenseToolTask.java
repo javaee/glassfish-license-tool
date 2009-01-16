@@ -52,6 +52,7 @@ public class LicenseToolTask extends MatchingTask {
     boolean verbose = false;
     List<File> roots = new ArrayList<File>();
     List<String> skipdirs;
+    List<String> options   = new ArrayList<String>();
     FileWrapper copyright;
     String startyear;
     boolean dryrun = false;
@@ -86,7 +87,9 @@ public class LicenseToolTask extends MatchingTask {
         this.skipdirs = Arrays.asList(skipdirs.split(","));
     }
 
-
+    public void setOptions(String options) {
+        this.options = Arrays.asList(options.split(","));
+    }
 
     @Override
     protected DirectoryScanner getDirectoryScanner(File baseDir) {
@@ -123,6 +126,10 @@ public class LicenseToolTask extends MatchingTask {
             }
             public String startyear() {
                 return startyear;
+            }
+
+            public List<String> options() {
+                return options;
             }
         };
 

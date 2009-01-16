@@ -82,6 +82,11 @@ public class LicenseTool {
         @DefaultValue("1997")
         @Help("Default copyright start year, if not otherwise specified")
         String startyear();
+
+        @Help("Extra options")
+        @DefaultValue("")
+        List<String> options();
+
     }
 
     private static boolean validate;
@@ -192,7 +197,10 @@ public class LicenseTool {
 
             Scanner.Action action;
             if(validate) {
-                action = new ActionFactory().getValidateCopyrightAction(copyrightBlock);
+                if(args.options().contains("checkEmpty"))
+                    action = new ActionFactory().getValidateEmptyCommentBlockAction(null);
+                else
+                    action = new ActionFactory().getValidateCopyrightAction(copyrightBlock);
             } else {
                 action = new ActionFactory().getModifyCopyrightAction(copyrightBlock);
                 //action = new ActionFactory(verbose).getReWriteCopyrightAction();
