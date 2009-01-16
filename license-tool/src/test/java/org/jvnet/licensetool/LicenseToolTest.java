@@ -41,6 +41,8 @@ public class LicenseToolTest
     {   List<String> args = new ArrayList<String>();
         args.add("-validate");
         args.add("false");
+        args.add("-options");
+        args.add("checkEmpty");
         args.add("-verbose");
         args.add("false");
         args.add("-dryrun");

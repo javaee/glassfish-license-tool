@@ -42,6 +42,7 @@ import org.jvnet.licensetool.util.ToolUtil;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+import java.util.List;
 
 public class ActionFactory {
     private final String COPYRIGHT = "Copyright";
@@ -81,7 +82,7 @@ public class ActionFactory {
         };
     }
 
-    public Scanner.Action getValidateCopyrightAction(final PlainBlock copyrightBlock) {
+    public Scanner.Action getValidateCopyrightAction(final PlainBlock copyrightBlock, final List<String> options) {
         trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock);
 
 
@@ -114,25 +115,12 @@ public class ActionFactory {
                         } else {
                             validationError(block, "Sun Copyright Block is not the first comment block", pfile.getPath());
                         }
-                    }
-                }
-                return true;
-            }
-        };
-    }
+                    } else {
+                        //if empty comment block, remove it.
+                        if(options.contains("checkEmpty") && isEmpty(block.comment())){
+                            validationError(block, "Empty comment block in", pfile.getPath());
+                        }
 
-    public Scanner.Action getValidateEmptyCommentBlockAction(final PlainBlock copyrightBlock) {
-
-        return new Scanner.Action() {
-            public String toString() {
-                return "CopyrightBlockAction[copyrightText=" + copyrightBlock + "]";
-            }
-
-            // Generally always return true, because we want to see ALL validation errors.
-            public boolean evaluate(ParsedFile pfile) {
-                for (CommentBlock block : pfile.getComments()) {
-                    if(isEmpty(block.comment())){
-                       validationError(block, "Empty comment block in", pfile.getPath());
                     }
                 }
                 return true;
@@ -152,7 +140,7 @@ public class ActionFactory {
     // afterFirstBlock is true if the copyright needs to start after the first block in the
     // file.
 
-    public Scanner.Action getModifyCopyrightAction(final PlainBlock copyrightBlock) {
+    public Scanner.Action getModifyCopyrightAction(final PlainBlock copyrightBlock, final List<String> options) {
         trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock);
 
 
@@ -190,6 +178,13 @@ public class ActionFactory {
                             pfile.remove(block);
                             pfile.insertCommentBlock(copyrightBlock.contents());
                         }
+                    } else {
+                        //if empty comment block, remove it.
+                        if(options.contains("checkEmpty") && isEmpty(block.comment())){
+                            trace("Remove: empty comment block in" + pfile.getPath());
+                            pfile.remove(block);
+                        }
+
                     }
                 }
                 try {
@@ -200,6 +195,10 @@ public class ActionFactory {
                     return false;
                 }
                 return true;
+            }
+
+            private boolean isEmpty(String content) {
+                return content.trim().equals("");
             }
         };
     }

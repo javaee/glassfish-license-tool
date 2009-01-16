@@ -197,12 +197,9 @@ public class LicenseTool {
 
             Scanner.Action action;
             if(validate) {
-                if(args.options().contains("checkEmpty"))
-                    action = new ActionFactory().getValidateEmptyCommentBlockAction(null);
-                else
-                    action = new ActionFactory().getValidateCopyrightAction(copyrightBlock);
+                action = new ActionFactory().getValidateCopyrightAction(copyrightBlock, args.options());
             } else {
-                action = new ActionFactory().getModifyCopyrightAction(copyrightBlock);
+                action = new ActionFactory().getModifyCopyrightAction(copyrightBlock, args.options());
                 //action = new ActionFactory(verbose).getReWriteCopyrightAction();
             }
             // Finally, we process all files

@@ -41,6 +41,7 @@
                                 </taskdef>
                                 <licensetool srcDir="."
                                              validate="true"
+                                             options="checkEmpty"
                                              skipdirs=".svn,.cvs"
                                              copyright="target/test-classes/copyright/copyright.txt"
                                              startyear="1997"
