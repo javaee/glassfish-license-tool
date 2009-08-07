@@ -117,7 +117,9 @@ public class Scanner {
                 FileParser parser = recognizer.getParser(fw);
                 if(parser == null) {
                     LOGGER.warning("Unrecognized file: " + fw);
-                    return false;
+                    if(!dryrun) {
+                        return false;
+                    }
                 }
                 if(!dryrun) {
                     ParsedFile pfile = parser.parseFile(fw);
