@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2003-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,8 +38,11 @@
  * holder.
  */
 
-package org.jvnet.licensetool.generic;
+package org.jvnet.licensetool.file;
 
-public interface BinaryFunction<S,T,R> {
-    R evaluate( S arg1, T arg2 ) ;
+/**
+ * @author Rama Pulavarthi
+ */
+public interface Versioned {
+    public VCS getVCS();
 }

@@ -1,27 +1,31 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License. You can obtain
- * a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
- * or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
- * Sun designates this particular file as subject to the "Classpath" exception
- * as provided by Sun in the GPL Version 2 section of the License file that
- * accompanied this code.  If applicable, add the following below the License
- * Header, with the fields enclosed by brackets [] replaced by your own
- * identifying information: "Portions Copyrighted [year]
- * [name of copyright owner]"
+ * file and include the License file at packager/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * Oracle designates this particular file as subject to the "Classpath"
+ * exception as provided by Oracle in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
  * elects to include this software in this distribution under the [CDDL or GPL
@@ -33,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package org.jvnet.licensetool;
 
 import org.jvnet.licensetool.argparser.ArgParser;
@@ -40,6 +45,7 @@ import org.jvnet.licensetool.argparser.DefaultValue;
 import org.jvnet.licensetool.argparser.Help;
 import org.jvnet.licensetool.file.PlainBlock;
 import org.jvnet.licensetool.file.FileWrapper;
+import org.jvnet.licensetool.util.ToolUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.*;
+import java.util.regex.Pattern;
 
 public class LicenseTool {
     private LicenseTool() {
@@ -83,9 +90,18 @@ public class LicenseTool {
         @Help("Default copyright start year, if not otherwise specified")
         String startyear();
 
+        @DefaultValue("")
+        @Help("Default copyright end year, if not otherwise specified")
+        String endyear();
+
         @Help("Extra options")
         @DefaultValue("")
         List<String> options();
+
+        @Help("Version Control System")
+        @DefaultValue("")
+        String vcs();
+
 
     }
 
@@ -126,6 +142,21 @@ public class LicenseTool {
     private static final String START_YEAR = "StartYear";
     private static final Logger LOGGER = Logger.getLogger(LicenseTool.class.getName());
 
+    private static PlainBlock makeCopyrightPatternBlock(PlainBlock copyrightTextBlock) {
+        StringBuilder sb = new StringBuilder();
+        String copyrightText = Pattern.quote(copyrightTextBlock.contents());
+
+        for(String line: ToolUtil.splitToLines(copyrightText) ) {
+            if(line.contains("YYYY ")) {
+                line = line.replace("YYYY ", "\\E[0-9]{4}(-[0-9]{4})? \\Q");
+            } else if(line.contains("YYYY, ")) {
+                line = line.replace("YYYY, ","\\E([0-9]{4}, )+\\Q");
+            }
+            sb.append(line);
+        }
+        return new PlainBlock(sb.toString());
+
+    }
     private static PlainBlock makeCopyrightBlock(String startYear,
                                             PlainBlock copyrightText) {
 
@@ -184,29 +215,39 @@ public class LicenseTool {
         }
         domainLogger.addHandler(sh);
         trace("Main: args:\n" + args);
-
+//        Versioned.VCS vcs = null;
+//        if(!args.vcs().equals("")) {
+//            vcs = Versioned.VCS.valueOf(args.vcs());
+//        } else {
+//            vcs= VCSHelper.sniffVCS(args.roots().get(0));
+//        }
 
         try {
             // Create the blocks needed for different forms of the
-            // copyright comment template
+            // copyright comment template                                                                   n ddr
             final PlainBlock copyrightText = new PlainBlock(args.copyright());
-            PlainBlock copyrightBlock = makeCopyrightBlock(startYear, copyrightText);
-            Scanner scanner = new Scanner(args.dryrun(), args.roots());
+
+            //TODO remove 123
+            //PlainBlock copyrightTemplate = makeCopyrightBlock(startYear, copyrightText);
+            PlainBlock copyrightTemplate = makeCopyrightPatternBlock(copyrightText);
+
+
+            Scanner scanner = new Scanner(args, args.roots());
             for (String str : args.skipdirs())
                 scanner.addDirectoryToSkip(str);
 
             Scanner.Action action;
             if(validate) {
-                action = new ActionFactory().getValidateCopyrightAction(copyrightBlock, args.options());
+                action = new ActionFactory().getValidateCopyrightAction(copyrightText, copyrightTemplate, args.options());
             } else {
-                action = new ActionFactory().getModifyCopyrightAction(copyrightBlock, args.options());
+                action = new ActionFactory().getModifyCopyrightAction(copyrightText, copyrightTemplate, args);
                 //action = new ActionFactory(verbose).getReWriteCopyrightAction();
             }
             // Finally, we process all files
             scanner.scan(new RecognizerFactory().getDefaultRecognizer(), action);
-        } catch (IOException exc) {
-            LOGGER.warning("Exception while processing: " + exc);
-            exc.printStackTrace();
+        } catch (Exception ex) {
+            LOGGER.warning("Exception while processing: " + ex);
+            ex.printStackTrace();
         }
     }
 

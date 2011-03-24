@@ -1,27 +1,31 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License. You can obtain
- * a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
- * or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
- * Sun designates this particular file as subject to the "Classpath" exception
- * as provided by Sun in the GPL Version 2 section of the License file that
- * accompanied this code.  If applicable, add the following below the License
- * Header, with the fields enclosed by brackets [] replaced by your own
- * identifying information: "Portions Copyrighted [year]
- * [name of copyright owner]"
+ * file and include the License file at packager/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * Oracle designates this particular file as subject to the "Classpath"
+ * exception as provided by Oracle in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
  * elects to include this software in this distribution under the [CDDL or GPL
@@ -33,11 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package org.jvnet.licensetool;
 
 import static org.jvnet.licensetool.Tags.COPYRIGHT_BLOCK_TAG;
-import static org.jvnet.licensetool.Tags.SUN_COPYRIGHT_TAG;
+import static org.jvnet.licensetool.Tags.OWN_COPYRIGHT_TAG;
+
 import org.jvnet.licensetool.file.*;
+import org.jvnet.licensetool.util.CopyrightParser;
 import org.jvnet.licensetool.util.ToolUtil;
 
 import java.io.IOException;
@@ -82,7 +89,7 @@ public class ActionFactory {
         };
     }
 
-    public Scanner.Action getValidateCopyrightAction(final PlainBlock copyrightBlock, final List<String> options) {
+    public Scanner.Action getValidateCopyrightAction(final PlainBlock copyrightBlock, final PlainBlock copyrightTemplateBlock, final List<String> options) {
         trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock);
 
 
@@ -96,24 +103,25 @@ public class ActionFactory {
                 //tag blocks
                 boolean hadAnOldSunCopyright = tagBlocks(pfile);
                 if (!hadAnOldSunCopyright) {
-                    validationError(null, "No Sun Copyright header in ", pfile.getPath());
+                    validationError(null, "No Sun/Oracle Copyright header in ", pfile.getPath());
                 }
                 // There should be a Sun copyright block in the first block
                 int countSunCopyright = 0;
                 for (CommentBlock block : pfile.getComments()) {
-                    if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG)) {
+                    if (block.hasTags(OWN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG)) {
                         countSunCopyright++;
                         if (countSunCopyright > 1) {
-                            validationError(block, "More than one Sun Copyright Block", pfile.getPath());
+                            validationError(block, "More than one Sun/Oracle Copyright Block", pfile.getPath());
                             continue;
                         }
                         if (block.hasTag(CommentBlock.TOP_COMMENT_BLOCK)) {
-                            if (!(ToolUtil.areCommentsSimilar(copyrightBlock.contents(),block.comment()))) {
+                            //if (!(ToolUtil.areCommentsSimilar(copyrightBlock.contents(),block.comment()))) {
+                            if (!(ToolUtil.doesCopyrightMatch(copyrightTemplateBlock.contents(),block.comment()))) {
                                 // It should entirely match copyrightText
                                 validationError(block, "First block has incorrect copyright text", pfile.getPath());
                             }
                         } else {
-                            validationError(block, "Sun Copyright Block is not the first comment block", pfile.getPath());
+                            validationError(block, "Sun/Oracle Copyright Block is not the first comment block", pfile.getPath());
                         }
                     } else {
                         //if empty comment block, remove it.
@@ -140,7 +148,7 @@ public class ActionFactory {
     // afterFirstBlock is true if the copyright needs to start after the first block in the
     // file.
 
-    public Scanner.Action getModifyCopyrightAction(final PlainBlock copyrightBlock, final List<String> options) {
+    public Scanner.Action getModifyCopyrightAction(final PlainBlock copyrightBlock, final PlainBlock copyrightTemplateBlock, final LicenseTool.Arguments args) {
         trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock);
 
 
@@ -153,40 +161,46 @@ public class ActionFactory {
                 //tag blocks
                 boolean hadAnOldSunCopyright = tagBlocks(pfile);
                 trace("Updating copyright/license header on file " + pfile.getPath());
-                if (!hadAnOldSunCopyright) {
-                    trace("Insert: No Sun Copyright header in " + pfile.getPath());
-                    pfile.insertCommentBlock(copyrightBlock.contents());
-                }
                 int countSunCopyright = 0;
                 for (CommentBlock block : pfile.getComments()) {
-                    if (block.hasTags(SUN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG)) {
+                    if (block.hasTags(OWN_COPYRIGHT_TAG, COPYRIGHT_BLOCK_TAG)) {
                         countSunCopyright++;
                         if (countSunCopyright > 1) {
-                            trace("Remove: More than one Sun Copyright Block " + pfile.getPath());
+                            trace("Remove: More than one Sun/Oracle Copyright Block " + pfile.getPath());
                             pfile.remove(block);
                             continue;
                         }
                         if (block.hasTag(CommentBlock.TOP_COMMENT_BLOCK)) {
-                            if (!(ToolUtil.areCommentsSimilar(copyrightBlock.contents(), block.comment()))) {
+                            //if (!(ToolUtil.areCommentsSimilar(copyrightBlock.contents(), block.comment()))) {
+                            if (!(ToolUtil.doesCopyrightMatch(copyrightTemplateBlock.contents(), block.comment()))) {
                                 // It should entirely match copyrightText
                                 trace("Replace: First block has incorrect copyright text " + pfile.getPath());
                                 pfile.remove(block);
-                                pfile.insertCommentBlock(copyrightBlock.contents());
+                                pfile.insertCommentBlock(fixCopyright(copyrightBlock.contents(), block.getCopyright(), args, getLastModifiedDate(pfile)));
                             }
                         } else {
-                            trace("Move: Sun Copyright Block is not the first comment block" + pfile.getPath());
+                            trace("Move: Sun/Oracle Copyright Block is not the first comment block" + pfile.getPath());
                             pfile.remove(block);
-                            pfile.insertCommentBlock(copyrightBlock.contents());
+                            if (!(ToolUtil.doesCopyrightMatch(copyrightTemplateBlock.contents(), block.comment()))) {
+                                pfile.insertCommentBlock(fixCopyright(copyrightBlock.contents(), null, args, getLastModifiedDate(pfile)));
+                            } else {
+                                pfile.insertCommentBlock(block.comment());
+                            }
                         }
                     } else {
                         //if empty comment block, remove it.
-                        if(options.contains("checkEmpty") && isEmpty(block.comment())){
+                        if (args.options().contains("checkEmpty") && isEmpty(block.comment())) {
                             trace("Remove: empty comment block in" + pfile.getPath());
                             pfile.remove(block);
                         }
 
                     }
                 }
+                if (!hadAnOldSunCopyright) {
+                    trace("Insert: No Sun/Oracle Copyright header in " + pfile.getPath());
+                    pfile.insertCommentBlock(fixCopyright(copyrightBlock.contents(),null, args, getLastModifiedDate(pfile)));
+                }
+
                 try {
                     pfile.write();
                 } catch (IOException exc) {
@@ -201,6 +215,56 @@ public class ActionFactory {
                 return content.trim().equals("");
             }
         };
+    }
+
+    private String getLastModifiedDate(ParsedFile pfile) {
+        String lastModified = null;
+        if (pfile.getVCS() != null) {
+            lastModified = pfile.getVCS().getLastModifiedYear(pfile.getPath());
+        }
+        return lastModified;
+    }
+
+    //TODO Use file last changed date
+    private String fixCopyright(String cr_text, CommentBlock.Copyright copyright, LicenseTool.Arguments args, String lastModified) {
+        StringBuilder sb = new StringBuilder();
+        String startYear = args.startyear();
+        String endYear;
+        if(copyright != null) {
+            startYear = copyright.getStartYear();
+            if(startYear == null) {
+                startYear = args.startyear();
+            }
+            endYear = copyright.getEndYear();
+            if(endYear == null) {
+                endYear = lastModified;    
+            }
+        }
+        endYear = args.endyear();
+        if(startYear.equals(endYear)) {
+            endYear = null;
+        }
+        for(String line: ToolUtil.splitToLines(cr_text)) {
+            if(line.contains("YYYY ")) {
+                String years = null;
+                if(endYear != null && !endYear.equals("")) {
+                    years = startYear+"-"+endYear+" ";
+                } else {
+                    years = startYear+" ";
+                }
+
+                line = line.replace("YYYY ", years);
+            } else if(line.contains("YYYY, ")) {
+                String years = startYear+", ";
+                if(endYear != null && !endYear.equals("")) {
+                    years = years+endYear+", ";
+                }
+                line = line.replace("YYYY, ", years);
+            }
+            sb.append(line);
+        }
+
+        return sb.toString();
     }
 
     //Just delete the original file and rewrite it to test if parsing and writing back works correctly.
@@ -224,16 +288,18 @@ public class ActionFactory {
         boolean hadAnOldSunCopyright = false;
         // Tag blocks
         for (CommentBlock cb : pfile.getComments()) {
-            String str = cb.find(COPYRIGHT);
-            if (str != null) {
-                cb.addTag(COPYRIGHT_BLOCK_TAG);
+            CopyrightParser.parseCopyright(cb, pfile);
+            if(cb.hasTag(COPYRIGHT_BLOCK_TAG)) {
                 String cddl = cb.find("CDDL");
                 if (cddl != null) {
                     cb.addTag("CDDL_TAG");
                 }
-                if (str.contains("Sun")) {
-                    cb.addTag(SUN_COPYRIGHT_TAG);
-                    hadAnOldSunCopyright = true;
+                CommentBlock.Copyright cr = cb.getCopyright();
+                if (cr != null && cr.getLicensor() != null) {
+                    if (cr.getLicensor().contains("Sun") ||cr.getLicensor().contains("Oracle") ) {
+                        cb.addTag(OWN_COPYRIGHT_TAG);
+                        hadAnOldSunCopyright = true;
+                    }
                 }
             }
         }
