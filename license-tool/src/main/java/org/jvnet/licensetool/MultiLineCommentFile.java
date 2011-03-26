@@ -50,6 +50,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.logging.Logger;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 /**
  * @author Rama Pulavarthi
@@ -186,11 +187,13 @@ public class MultiLineCommentFile {
         final String start;
         final String end;
         final String prefix;
+        final String preamblePattern;
 
-        public MultiLineCommentFileParser(String start, String end, String prefix) {
+        public MultiLineCommentFileParser(String start, String end, String prefix, String preamblePattern) {
             this.start = start;
             this.end = end;
             this.prefix = prefix;
+            this.preamblePattern = preamblePattern;
         }
 
         public class BlockCommentParsedFile extends ParsedFile {
@@ -288,6 +291,14 @@ public class MultiLineCommentFile {
                 } finally {
                     fw.close();
                 }
+            }
+
+            @Override
+            public boolean isPreamble(String line) {
+                if( preamblePattern != null && line.matches(preamblePattern)){
+                    return true;
+                }
+                return false;
             }
 
             protected CommentBlock createCommentBlock(String commentText) {

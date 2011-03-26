@@ -89,7 +89,7 @@ public class ActionFactory {
         };
     }
 
-    public Scanner.Action getValidateCopyrightAction(final PlainBlock copyrightBlock, final PlainBlock copyrightTemplateBlock, final List<String> options) {
+    public Scanner.Action getValidateCopyrightAction(final PlainBlock copyrightBlock, final PlainBlock copyrightTemplateBlock, final LicenseTool.Arguments args) {
         trace("makeCopyrightBlockAction: copyrightText = " + copyrightBlock);
 
 
@@ -125,7 +125,7 @@ public class ActionFactory {
                         }
                     } else {
                         //if empty comment block, remove it.
-                        if(options.contains("checkEmpty") && isEmpty(block.comment())){
+                        if(args.options().contains("checkEmpty") && isEmpty(block.comment())){
                             validationError(block, "Empty comment block in", pfile.getPath());
                         }
 
@@ -176,13 +176,13 @@ public class ActionFactory {
                                 // It should entirely match copyrightText
                                 trace("Replace: First block has incorrect copyright text " + pfile.getPath());
                                 pfile.remove(block);
-                                pfile.insertCommentBlock(fixCopyright(copyrightBlock.contents(), block.getCopyright(), args, getLastModifiedDate(pfile)));
+                                pfile.insertCommentBlock(fixCopyright(copyrightBlock.contents(), block.getCopyright(), args, getLastModifiedDate(args, pfile)));
                             }
                         } else {
                             trace("Move: Sun/Oracle Copyright Block is not the first comment block" + pfile.getPath());
                             pfile.remove(block);
                             if (!(ToolUtil.doesCopyrightMatch(copyrightTemplateBlock.contents(), block.comment()))) {
-                                pfile.insertCommentBlock(fixCopyright(copyrightBlock.contents(), null, args, getLastModifiedDate(pfile)));
+                                pfile.insertCommentBlock(fixCopyright(copyrightBlock.contents(), null, args, getLastModifiedDate(args, pfile)));
                             } else {
                                 pfile.insertCommentBlock(block.comment());
                             }
@@ -198,7 +198,7 @@ public class ActionFactory {
                 }
                 if (!hadAnOldSunCopyright) {
                     trace("Insert: No Sun/Oracle Copyright header in " + pfile.getPath());
-                    pfile.insertCommentBlock(fixCopyright(copyrightBlock.contents(),null, args, getLastModifiedDate(pfile)));
+                    pfile.insertCommentBlock(fixCopyright(copyrightBlock.contents(),null, args, getLastModifiedDate(args, pfile)));
                 }
 
                 try {
@@ -217,9 +217,9 @@ public class ActionFactory {
         };
     }
 
-    private String getLastModifiedDate(ParsedFile pfile) {
+    private String getLastModifiedDate(LicenseTool.Arguments args, ParsedFile pfile) {
         String lastModified = null;
-        if (pfile.getVCS() != null) {
+        if (args != null && args.uselastmodified() && pfile.getVCS() != null) {
             lastModified = pfile.getVCS().getLastModifiedYear(pfile.getPath());
         }
         return lastModified;
@@ -228,26 +228,32 @@ public class ActionFactory {
     //TODO Use file last changed date
     private String fixCopyright(String cr_text, CommentBlock.Copyright copyright, LicenseTool.Arguments args, String lastModified) {
         StringBuilder sb = new StringBuilder();
+
         String startYear = args.startyear();
-        String endYear;
+        String endYear=args.endyear();
+
+        if(startYear != null && startYear.equals("")) {
+            startYear = null;
+        }
+        if(endYear == null || (lastModified != null && lastModified.compareTo(endYear) > 0)) {
+            endYear = lastModified;
+        }
+
         if(copyright != null) {
-            startYear = copyright.getStartYear();
-            if(startYear == null) {
-                startYear = args.startyear();
+            if(startYear == null || (copyright.getStartYear() != null && copyright.getStartYear().compareTo(startYear) < 0)) {
+                startYear = copyright.getStartYear();
             }
-            endYear = copyright.getEndYear();
-            if(endYear == null) {
-                endYear = lastModified;    
+            if(endYear== null || (copyright.getEndYear() != null && copyright.getEndYear().compareTo(endYear) > 0)) {
+                endYear = copyright.getEndYear();
             }
         }
-        endYear = args.endyear();
-        if(startYear.equals(endYear)) {
-            endYear = null;
+        if(startYear == null || startYear.equals("")) {
+            //TODO throw validation exception
         }
         for(String line: ToolUtil.splitToLines(cr_text)) {
             if(line.contains("YYYY ")) {
                 String years = null;
-                if(endYear != null && !endYear.equals("")) {
+                if(endYear != null && !endYear.equals("") && endYear.compareTo(startYear) > 0) {
                     years = startYear+"-"+endYear+" ";
                 } else {
                     years = startYear+" ";
@@ -256,7 +262,7 @@ public class ActionFactory {
                 line = line.replace("YYYY ", years);
             } else if(line.contains("YYYY, ")) {
                 String years = startYear+", ";
-                if(endYear != null && !endYear.equals("")) {
+                if(endYear != null && !endYear.equals("") && endYear.compareTo(startYear) > 0) {
                     years = years+endYear+", ";
                 }
                 line = line.replace("YYYY, ", years);

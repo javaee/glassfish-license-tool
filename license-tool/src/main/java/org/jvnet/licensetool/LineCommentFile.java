@@ -256,6 +256,11 @@ public class LineCommentFile {
                 }
             }
 
+            @Override
+            public boolean isPreamble(String line) {
+                return false;
+            }
+
             protected CommentBlock createCommentBlock(String commentText) {
                 return LineCommentBlock.createCommentBlock(prefix, commentText, line_separator);
             }

@@ -81,5 +81,8 @@ public abstract class ParsedFile implements Versioned {
     public VCS getVCS() {
         return vcs;
     }
+
+    public abstract boolean isPreamble(String line);
+    
     private static final Logger LOGGER = Logger.getLogger(FileParser.class.getName());
 }

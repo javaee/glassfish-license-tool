@@ -75,7 +75,14 @@ public class RecognizerFactory {
         for (String suffix : XML_LIKE_SUFFIXES) {
             recognizer.addRecognizer(suffix,
                     new FileSuffixRecognizer(suffix,
-                            FileParserFactory.createXMLFileParser()));
+                            FileParserFactory.createXMLFileParser("<?(.)*?>")));
+        }
+
+        // HTML
+        for (String suffix : HTML_LIKE_SUFFIXES) {
+            recognizer.addRecognizer(suffix,
+                    new FileSuffixRecognizer(suffix,
+                            FileParserFactory.createXMLFileParser("<!DOCTYPE (.*)>")));
         }
 
         // JSP

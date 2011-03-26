@@ -70,7 +70,7 @@ public class FileParserFactory {
                     Block fBlock = fileBlocks.get(0);
                     if (fBlock instanceof CommentBlock) {
                         LineCommentFile.LineCommentBlock  firstBlock = (LineCommentFile.LineCommentBlock) fBlock;
-                        if (firstBlock.contents().startsWith("#!")) {
+                        if (isPreamble(firstBlock.contents())) {
 
                             Pair<LineCommentFile.LineCommentBlock,LineCommentFile.LineCommentBlock> splitBlocks =
                                     firstBlock.splitFirst();
@@ -89,6 +89,10 @@ public class FileParserFactory {
                     }
                 }
 
+                @Override
+                public boolean isPreamble(String line) {
+                    return line.startsWith("#!");
+                }
                 @Override
                 protected void postParse() {
                     if(fileBlocks.get(0) instanceof CommentBlock) {
@@ -176,7 +180,7 @@ public class FileParserFactory {
         final String JAVA_COMMENT_START = "/*";
         final String JAVA_COMMENT_PREFIX = " *";
         final String JAVA_COMMENT_END = "*/";
-        return new MultiLineCommentFile.MultiLineCommentFileParser(JAVA_COMMENT_START, JAVA_COMMENT_END, JAVA_COMMENT_PREFIX) {
+        return new MultiLineCommentFile.MultiLineCommentFileParser(JAVA_COMMENT_START, JAVA_COMMENT_END, JAVA_COMMENT_PREFIX,"") {
             @Override
             public ParsedFile parseFile(final FileWrapper file) throws IOException {
                 return new BlockCommentParsedFile(file) {
@@ -205,16 +209,17 @@ public class FileParserFactory {
         final String JSP_COMMENT_PREFIX = "";
         final String JSP_COMMENT_END = "--%>";
         return new MultiLineCommentFile.MultiLineCommentFileParser(JSP_COMMENT_START, JSP_COMMENT_END,
-                JSP_COMMENT_PREFIX);
+                JSP_COMMENT_PREFIX, null);
     }
 
-    public static FileParser createXMLFileParser() {
+    public static FileParser createXMLFileParser(final String preamblePattern) {
         final String XML_COMMENT_START = "<!--";
         final String XML_COMMENT_PREFIX = "";
         final String XML_COMMENT_END = "-->";
+        
 
         return new MultiLineCommentFile.MultiLineCommentFileParser(
-                XML_COMMENT_START, XML_COMMENT_END, XML_COMMENT_PREFIX) {
+                XML_COMMENT_START, XML_COMMENT_END, XML_COMMENT_PREFIX, preamblePattern) {
 
             @Override
             public ParsedFile parseFile(final FileWrapper file) throws IOException {
@@ -231,10 +236,7 @@ public class FileParserFactory {
                             PlainBlock plainBlock = (PlainBlock) firstBlock;
                             List<String> lines = ToolUtil.splitToLines(plainBlock.contents());
                             String firstLine = lines.get(0);
-                            if (firstLine.trim().startsWith("<?xml")) {
-                                if (!firstLine.trim().endsWith("?>")) {
-                                    throw new RuntimeException("Needs special handling");
-                                }
+                            if (isPreamble(firstLine.trim())) {
                                 Pair<Block, Block> splitBlocks = plainBlock.splitFirst();
                                 Block xmlDeclaration = splitBlocks.first();
                                 Block restOfXml = splitBlocks.second();
@@ -259,7 +261,7 @@ public class FileParserFactory {
                         else if(b instanceof PlainBlock) {
                             List<String> content = ToolUtil.splitToLines(((PlainBlock)b).contents());
                             String firstLine =content.get(0);
-                            if(firstLine.trim().startsWith("<?xml") && firstLine.trim().endsWith("?>")) {
+                            if(isPreamble(firstLine.trim())) {
                                 if(content.size() > 1) {
                                     for(int i=1; i<content.size();i++) {
                                         // after first line, there is non-empty content

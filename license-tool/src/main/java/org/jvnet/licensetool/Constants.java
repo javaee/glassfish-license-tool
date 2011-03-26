@@ -44,7 +44,11 @@ public class Constants {
     public static final String[] JAVA_LIKE_SUFFIXES = {
             "c", "h", "java", "sjava", "idl"};
     public static final String[] XML_LIKE_SUFFIXES = {
-            "htm", "html", "xml", "dtd", "rng", "xsd"};
+            "xml", "dtd", "rng", "xsd"};
+
+    public static final String[] HTML_LIKE_SUFFIXES = {
+                "htm", "html", "dtd"};
+
     public static final String[] JSP_LIKE_SUFFIXES = {
             "jsp"};    
     public static final String[] JAVA_LINE_LIKE_SUFFIXES = {

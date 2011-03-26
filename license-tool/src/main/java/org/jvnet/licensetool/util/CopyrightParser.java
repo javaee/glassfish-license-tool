@@ -65,7 +65,7 @@ public class CopyrightParser {
             Pattern.compile("([0-9]*)(?:, |-)*([0-9]*)(?:[, ])?");
 
     private static final Pattern reservedRights =
-            Pattern.compile("All rights reserved.", Pattern.CASE_INSENSITIVE);
+            Pattern.compile("All rights reserved[.]?", Pattern.CASE_INSENSITIVE);
 
     private static final String copyright_tag = "Copyright";
     
@@ -93,13 +93,17 @@ public class CopyrightParser {
 
                     String remaining = line.substring(m.end(1));
                     Matcher rightsMatcher = reservedRights.matcher(remaining);
+                    String licensor;
                     if (rightsMatcher.find()) {
-                        String licensor = remaining.substring(0, rightsMatcher.start() - 1);
-                        copyright.setLicensor(licensor.trim());
+                        licensor = remaining.substring(0, rightsMatcher.start() - 1);
+                    } else {
+                        //treat rest of the line as the licensor.
+                        licensor = remaining;                                                                
                     }
+                    copyright.setLicensor(licensor.trim());
                     commentBlock.setCopyright(copyright);
-                }
-                break;
+                    break;
+                }                         
             }
         }
     }

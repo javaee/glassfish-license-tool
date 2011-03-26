@@ -63,6 +63,7 @@ public class LicenseToolTask extends MatchingTask {
     String startyear;
     String endyear;
     boolean dryrun = false;
+    boolean uselastmodified = false;
     String vcs = "";
     private File srcDir;
 
@@ -101,6 +102,10 @@ public class LicenseToolTask extends MatchingTask {
     public void setVcs(String vcs) {
             this.vcs = vcs;
     }
+
+    public void setUselastmodified(boolean uselastmodified) {
+            this.uselastmodified = uselastmodified;
+        }
 
 
     public void setOptions(String options) {
@@ -154,6 +159,10 @@ public class LicenseToolTask extends MatchingTask {
 
             public String vcs() {
                 return vcs;
+            }
+
+            public boolean uselastmodified() {
+                return false;
             }
         };
 

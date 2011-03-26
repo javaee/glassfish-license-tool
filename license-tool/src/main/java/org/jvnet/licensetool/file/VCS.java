@@ -110,13 +110,16 @@ public enum VCS {
         public String getLastModifiedYear(String f) {
             String output = "";
             try {
-                output = executeExternalCommand(null, "hg", "log", "--limit", "1",
+                output = executeExternalCommand(new File(f).getParentFile(), "hg", "log", "--limit", "1",
                         "--template", "{date|shortdate}", f);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             if (output != null && !output.equals("")) {
-                return output.substring(0, 4);
+                output = output.substring(0, 4);
+                if(output.matches("[\\d]{4}")) {
+                    return output;
+                }
             }
             return null;
         }

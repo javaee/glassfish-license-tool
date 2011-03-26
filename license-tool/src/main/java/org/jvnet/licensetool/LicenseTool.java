@@ -102,6 +102,10 @@ public class LicenseTool {
         @DefaultValue("")
         String vcs();
 
+        @DefaultValue("false")
+        @Help("Set to true to use last modified date of the file from VCS history if it is later than the end year")
+        boolean uselastmodified();
+
 
     }
 
@@ -238,7 +242,7 @@ public class LicenseTool {
 
             Scanner.Action action;
             if(validate) {
-                action = new ActionFactory().getValidateCopyrightAction(copyrightText, copyrightTemplate, args.options());
+                action = new ActionFactory().getValidateCopyrightAction(copyrightText, copyrightTemplate, args);
             } else {
                 action = new ActionFactory().getModifyCopyrightAction(copyrightText, copyrightTemplate, args);
                 //action = new ActionFactory(verbose).getReWriteCopyrightAction();
