@@ -48,6 +48,7 @@ import org.jvnet.licensetool.util.CopyrightParser;
 import org.jvnet.licensetool.util.ToolUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.List;
 
@@ -101,7 +102,7 @@ public class ActionFactory {
             // Generally always return true, because we want to see ALL validation errors.
             public boolean evaluate(ParsedFile pfile) {
                 //tag blocks
-                boolean hadAnOldSunCopyright = tagBlocks(pfile);
+                boolean hadAnOldSunCopyright = tagBlocks(pfile, args);
                 if (!hadAnOldSunCopyright) {
                     validationError(null, "No Sun/Oracle Copyright header in ", pfile.getPath());
                 }
@@ -159,7 +160,7 @@ public class ActionFactory {
 
             public boolean evaluate(ParsedFile pfile) {
                 //tag blocks
-                boolean hadAnOldSunCopyright = tagBlocks(pfile);
+                boolean hadAnOldSunCopyright = tagBlocks(pfile, args);
                 trace("Updating copyright/license header on file " + pfile.getPath());
                 int countSunCopyright = 0;
                 for (CommentBlock block : pfile.getComments()) {
@@ -182,7 +183,7 @@ public class ActionFactory {
                             trace("Move: Sun/Oracle Copyright Block is not the first comment block" + pfile.getPath());
                             pfile.remove(block);
                             if (!(ToolUtil.doesCopyrightMatch(copyrightTemplateBlock.contents(), block.comment()))) {
-                                pfile.insertCommentBlock(fixCopyright(copyrightBlock.contents(), null, args, getLastModifiedDate(args, pfile)));
+                                pfile.insertCommentBlock(fixCopyright(copyrightBlock.contents(), block.getCopyright(), args, getLastModifiedDate(args, pfile)));
                             } else {
                                 pfile.insertCommentBlock(block.comment());
                             }
@@ -229,9 +230,14 @@ public class ActionFactory {
     private String fixCopyright(String cr_text, CommentBlock.Copyright copyright, LicenseTool.Arguments args, String lastModified) {
         StringBuilder sb = new StringBuilder();
 
-        String startYear = args.startyear();
-        String endYear=args.endyear();
-
+        String startYear = null;
+        String endYear = null;
+        //Use default start year, end year if there is no existing copyright
+        if(copyright == null) {
+            startYear = args.startyear();
+            endYear=args.endyear();
+        }
+        
         if(startYear != null && startYear.equals("")) {
             startYear = null;
         }
@@ -290,8 +296,15 @@ public class ActionFactory {
         };
     }
 
-    private boolean tagBlocks(ParsedFile pfile) {
+    private boolean tagBlocks(ParsedFile pfile, LicenseTool.Arguments args) {
         boolean hadAnOldSunCopyright = false;
+        String LICENSOR_KEYWORD = "licensor:";
+        List<String> own_licensors = new ArrayList<String>();
+        for(String option:args.options()) {
+            if(option.startsWith(LICENSOR_KEYWORD)) {
+                own_licensors.add(option.substring(LICENSOR_KEYWORD.length()));
+            }
+        }
         // Tag blocks
         for (CommentBlock cb : pfile.getComments()) {
             CopyrightParser.parseCopyright(cb, pfile);
@@ -306,6 +319,14 @@ public class ActionFactory {
                         cb.addTag(OWN_COPYRIGHT_TAG);
                         hadAnOldSunCopyright = true;
                     }
+
+                    for(String licensor: own_licensors) {
+                        if(cr.getLicensor().contains(licensor)) {
+                            cb.addTag(OWN_COPYRIGHT_TAG);
+                            hadAnOldSunCopyright = true;    
+                        }
+                    }
+
                 }
             }
         }

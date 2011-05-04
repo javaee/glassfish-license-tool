@@ -40,6 +40,7 @@
 
 package org.jvnet.licensetool.util;
 
+import org.jvnet.licensetool.LicenseTool;
 import org.jvnet.licensetool.file.CommentBlock;
 import org.jvnet.licensetool.file.ParsedFile;
 
@@ -58,7 +59,7 @@ public class CopyrightParser {
             Pattern.compile("(\\b[Cc]opyright[,]?\\b|\\([Cc]\\))", Pattern.MULTILINE);
 
     private static Pattern copyright_year_pattern =
-            Pattern.compile("[Cc]opyright[,]? (?:\\([Cc]\\) )?([-0-9, ]+) [A-Z]",Pattern.MULTILINE);
+            Pattern.compile("[Cc]opyright[,]? (?:\\([Cc]\\) )?([-0-9, ]+)([^-0-9, ]*)",Pattern.MULTILINE);
 
     //private static Pattern year_pattern = Pattern.compile("([0-9]{4})((, |-)([0-9]{4}))?(,)?");
     private static Pattern year_pattern =
@@ -103,7 +104,7 @@ public class CopyrightParser {
                     copyright.setLicensor(licensor.trim());
                     commentBlock.setCopyright(copyright);
                     break;
-                }                         
+                }
             }
         }
     }
