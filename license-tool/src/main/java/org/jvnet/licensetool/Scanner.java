@@ -64,10 +64,11 @@ public class Scanner {
     public Scanner(LicenseTool.Arguments args, final List<File> files) {
         this.roots = files;
         this.dryrun = args.dryrun();
-        if(!args.vcs().equals("")) {
+        if (!args.vcs().equals("")) {
             vcs = VCS.valueOf(args.vcs());
         } else {
-            vcs= VCS.sniffVCS(args.roots().get(0));
+            List<File> roots1 = args.roots();
+            vcs = roots1.size() > 0 ? VCS.sniffVCS(roots1.get(0)) : null;
         }
 
         patternsToSkip = new ArrayList<String>();
@@ -120,15 +121,15 @@ public class Scanner {
             final FileWrapper fw = new FileWrapper(file);
             try {
                 FileParser parser = recognizer.getParser(fw);
-                if(parser == null) {
+                if (parser == null) {
                     LOGGER.warning("Unrecognized file: " + fw);
-                    if(!dryrun) {
+                    if (!dryrun) {
                         return false;
                     }
                 }
-                if(!dryrun) {
+                if (!dryrun) {
                     ParsedFile pfile = parser.parseFile(fw);
-                    if(pfile != null) {
+                    if (pfile != null) {
                         pfile.setVCS(vcs);
                         result = action.evaluate(pfile);
                     }
@@ -155,7 +156,7 @@ public class Scanner {
             String absPath = file.getAbsolutePath();
             if (match(pattern, absPath)) {
                 LOGGER.fine("Scanner: Skipping directory "
-                            + absPath + "(pattern " + pattern + ")");
+                        + absPath + "(pattern " + pattern + ")");
                 return true;
             }
         }
@@ -174,7 +175,7 @@ public class Scanner {
             final String token = st.nextToken();
             if (pattern.equals(token)) {
                 LOGGER.fine("fname " + fname
-                            + " matched on pattern " + pattern);
+                        + " matched on pattern " + pattern);
                 return true;
             }
         }
